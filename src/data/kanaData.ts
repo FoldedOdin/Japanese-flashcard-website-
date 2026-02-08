@@ -1,5 +1,46 @@
 import { KanaCharacter } from '../types';
 
+// Dev-only data validator
+const validateKanaData = (data: KanaCharacter[], scriptType: 'hiragana' | 'katakana') => {
+  if (process.env.NODE_ENV === 'development') {
+    const romajiMap = new Map<string, string[]>();
+    const errors: string[] = [];
+
+    data.forEach((char) => {
+      // Check for missing fields
+      if (!char.id || !char.character || !char.romaji || !char.type || !char.category) {
+        errors.push(`Missing required fields in character: ${JSON.stringify(char)}`);
+      }
+
+      // Check scriptType matches
+      if (char.type !== scriptType) {
+        errors.push(`Invalid scriptType for ${char.character}: expected ${scriptType}, got ${char.type}`);
+      }
+
+      // Track duplicate romaji
+      if (!romajiMap.has(char.romaji)) {
+        romajiMap.set(char.romaji, []);
+      }
+      romajiMap.get(char.romaji)!.push(char.character);
+    });
+
+    // Report duplicate romaji (informational, not an error for hiragana/katakana)
+    romajiMap.forEach((chars, romaji) => {
+      if (chars.length > 1) {
+        console.info(`[Data Validator] Romaji "${romaji}" used by: ${chars.join(', ')} (${scriptType})`);
+      }
+    });
+
+    if (errors.length > 0) {
+      console.error('[Data Validator] Validation errors found:');
+      errors.forEach(error => console.error(`  - ${error}`));
+      throw new Error(`Kana data validation failed. Check console for details.`);
+    }
+
+    console.info(`[Data Validator] ✓ ${scriptType} data validated successfully (${data.length} characters)`);
+  }
+};
+
 export const hiraganaData: KanaCharacter[] = [
   // Basic vowels
   { id: 'h1', character: 'あ', romaji: 'a', type: 'hiragana', category: 'vowels' },
@@ -135,5 +176,9 @@ export const katakanaData: KanaCharacter[] = [
   { id: 'k45', character: 'ヲ', romaji: 'wo', type: 'katakana', category: 'w-sounds' },
   { id: 'k46', character: 'ン', romaji: 'n', type: 'katakana', category: 'n-sound' }
 ];
+
+// Run validators in development
+validateKanaData(hiraganaData, 'hiragana');
+validateKanaData(katakanaData, 'katakana');
 
 export const getAllKana = (): KanaCharacter[] => [...hiraganaData, ...katakanaData];

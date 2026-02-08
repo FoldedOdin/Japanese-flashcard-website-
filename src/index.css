@@ -48,14 +48,45 @@
   background: #64748b;
 }
 
-/* Smooth transitions */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+/* Component-specific transitions */
+.flashcard {
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quiz-option {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button, a {
+  transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Focus styles */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 .focus\:ring-2:focus {
   --tw-ring-shadow: 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
 }
@@ -123,4 +154,13 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Script type differentiation colors (WCAG compliant) */
+.script-hiragana {
+  color: #fbbf24; /* Warm amber for hiragana */
+}
+
+.script-katakana {
+  color: #60a5fa; /* Cool blue for katakana */
 }

@@ -100,10 +100,10 @@ const Contact: React.FC = () => {
             {/* Contact Form */}
             <div>
               <div className="bg-dark-800 rounded-2xl p-8 border border-dark-700">
-                <h2 className="text-2xl font-boldhtml text-white mb-6">Send us a Message</h2>
+                <h2 className="text-2xl font-bold text-white mb-6">Send us a Message</h2>
                 
                 {submitStatus === 'success' && (
-                  <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center space-x-3">
+                  <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center space-x-3" role="status" aria-live="polite">
                     <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
                     <div>
                       <p className="text-green-400 font-medium">Message sent successfully!</p>
@@ -113,7 +113,7 @@ const Contact: React.FC = () => {
                 )}
 
                 {submitStatus === 'error' && (
-                  <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center space-x-3">
+                  <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center space-x-3" role="alert" aria-live="assertive">
                     <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
                     <div>
                       <p className="text-red-400 font-medium">Failed to send message</p>

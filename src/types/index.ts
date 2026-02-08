@@ -4,6 +4,7 @@ export interface KanaCharacter {
   romaji: string;
   type: 'hiragana' | 'katakana';
   category: string;
+  scriptType?: 'hiragana' | 'katakana'; // For data validation and display
 }
 
 export interface UserProgress {

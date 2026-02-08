@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { RotateCcw, Trophy, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import QuizQuestionComponent from '../components/QuizQuestion';
@@ -6,6 +6,16 @@ import ProgressBar from '../components/ProgressBar';
 import { hiraganaData, katakanaData } from '../data/kanaData';
 import { KanaCharacter, QuizQuestion } from '../types';
 import { useProgress } from '../hooks/useProgress';
+
+// Fisher-Yates shuffle for unbiased randomization
+const fisherYatesShuffle = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
 
 const Quiz: React.FC = () => {
   const [mode, setMode] = useState<'hiragana' | 'katakana' | 'mixed'>('mixed');
@@ -32,24 +42,35 @@ const Quiz: React.FC = () => {
         break;
     }
 
-    const shuffled = [...sourceData].sort(() => Math.random() - 0.5);
+    const shuffled = fisherYatesShuffle(sourceData);
     const selectedChars = shuffled.slice(0, count);
 
     return selectedChars.map(char => {
       // Get 3 random wrong answers
-      const wrongAnswers = sourceData
-        .filter(c => c.romaji !== char.romaji)
-        .sort(() => Math.random() - 0.5)
+      const wrongAnswers = fisherYatesShuffle(
+        sourceData.filter(c => c.romaji !== char.romaji || c.type !== char.type)
+      )
         .slice(0, 3)
-        .map(c => c.romaji);
+        .map(c => {
+          // In mixed mode, add script type label to avoid duplicate romaji confusion
+          if (mode === 'mixed') {
+            return `${c.romaji} [${c.type === 'hiragana' ? 'Hiragana' : 'Katakana'}]`;
+          }
+          return c.romaji;
+        });
 
-      // Shuffle all options
-      const options = [char.romaji, ...wrongAnswers].sort(() => Math.random() - 0.5);
+      // Format correct answer with script type label in mixed mode
+      const correctAnswer = mode === 'mixed' 
+        ? `${char.romaji} [${char.type === 'hiragana' ? 'Hiragana' : 'Katakana'}]`
+        : char.romaji;
+
+      // Shuffle all options using Fisher-Yates
+      const options = fisherYatesShuffle([correctAnswer, ...wrongAnswers]);
 
       return {
         character: char,
         options,
-        correctAnswer: char.romaji,
+        correctAnswer,
       };
     });
   };

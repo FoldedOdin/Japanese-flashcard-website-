@@ -13,7 +13,7 @@ const Navigation: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           <Link 
             to="/" 
-            className="flex items-center space-x-2 text-white hover:text-primary-400 transition-colors"
+            className="flex items-center space-x-2 text-white hover:text-primary-400 focus:text-primary-400 transition-colors"
           >
             <Zap className="h-8 w-8 text-accent-500" />
             <span className="text-xl font-bold">NihongoFlash</span>
@@ -27,6 +27,7 @@ const Navigation: React.FC = () => {
                   ? 'text-primary-400 bg-dark-800' 
                   : 'text-gray-300 hover:text-white hover:bg-dark-800'
               }`}
+              aria-current={isActive('/') ? 'page' : undefined}
             >
               <Home className="h-4 w-4" />
               <span>Home</span>
@@ -39,6 +40,7 @@ const Navigation: React.FC = () => {
                   ? 'text-primary-400 bg-dark-800' 
                   : 'text-gray-300 hover:text-white hover:bg-dark-800'
               }`}
+              aria-current={isActive('/about') ? 'page' : undefined}
             >
               <Info className="h-4 w-4" />
               <span>About</span>
@@ -51,6 +53,7 @@ const Navigation: React.FC = () => {
                   ? 'text-primary-400 bg-dark-800' 
                   : 'text-gray-300 hover:text-white hover:bg-dark-800'
               }`}
+              aria-current={isActive('/contact') ? 'page' : undefined}
             >
               <Mail className="h-4 w-4" />
               <span>Contact</span>
