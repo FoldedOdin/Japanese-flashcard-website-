@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ProgressProvider } from './contexts/ProgressContext';
 import Navigation from './components/Navigation';
@@ -13,28 +13,49 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Settings from './pages/Settings';
 
+const AppLayout: React.FC = () => (
+  <div className="min-h-screen bg-paper text-ink transition-colors duration-300">
+    <Navigation />
+    <main id="main-content" className="min-h-screen">
+      <Outlet />
+    </main>
+    <Footer />
+  </div>
+);
+
+const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <AppLayout />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: 'learn', element: <Learn /> },
+        { path: 'quiz', element: <Quiz /> },
+        { path: 'statistics', element: <Statistics /> },
+        { path: 'achievements', element: <Achievements /> },
+        { path: 'about', element: <About /> },
+        { path: 'contact', element: <Contact /> },
+        { path: 'settings', element: <Settings /> },
+      ],
+    },
+  ],
+  {
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    },
+  }
+);
+
 function App() {
   return (
     <ThemeProvider>
       <ProgressProvider>
-        <Router>
-          <div className="min-h-screen bg-paper text-ink transition-colors duration-300">
-            <Navigation />
-            <main id="main-content" className="min-h-screen">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/learn" element={<Learn />} />
-                <Route path="/quiz" element={<Quiz />} />
-                <Route path="/statistics" element={<Statistics />} />
-                <Route path="/achievements" element={<Achievements />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/settings" element={<Settings />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </Router>
+        <RouterProvider
+          router={router}
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        />
       </ProgressProvider>
     </ThemeProvider>
   );

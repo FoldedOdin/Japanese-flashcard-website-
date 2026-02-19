@@ -4,7 +4,8 @@ import { useProgressStore } from './useProgressStore';
 export const useAudio = () => {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const voicesLoadedRef = useRef(false);
-  const { settings } = useProgressStore();
+  const { state } = useProgressStore();
+  const audioEnabled = state?.settings?.audioEnabled ?? true;
 
   // Load voices on mount
   useEffect(() => {
@@ -28,7 +29,7 @@ export const useAudio = () => {
   }, []);
 
   const playPronunciation = useCallback((romaji: string, scriptType?: string) => {
-    if (!settings.audioEnabled) {
+    if (!audioEnabled) {
       return;
     }
     // Use Web Speech API for pronunciation
@@ -60,7 +61,7 @@ export const useAudio = () => {
         console.warn('Speech synthesis failed:', error);
       }
     }
-  }, [settings.audioEnabled]);
+  }, [audioEnabled]);
 
   return { playPronunciation };
 };
