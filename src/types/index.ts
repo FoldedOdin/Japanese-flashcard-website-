@@ -5,67 +5,73 @@ export interface KanaCharacter {
   type: 'hiragana' | 'katakana';
   category: string;
   scriptType?: 'hiragana' | 'katakana'; // For data validation and display
+  isCombo?: boolean;
+  base?: string;
+  strokeCount?: number;
 }
 
-export interface UserProgress {
-  totalSeen: number;
-  totalCorrect: number;
-  currentStreak: number;
-  bestStreak: number;
-  completedCharacters: Set<string>;
-  score: number;
-}
+export type QuestionType = 'kana_to_romaji' | 'romaji_to_kana' | 'audio_to_kana';
 
-export enum MasteryLevel {
-  LEARNING = 'learning',
-  PRACTICING = 'practicing',
-  MASTERED = 'mastered'
-}
-
-export interface CharacterMastery {
+export interface CharacterProgress {
   characterId: string;
-  level: MasteryLevel;
-  correctCount: number;
-  totalSeen: number;
-  accuracy: number;
-  lastPracticed: Date;
-  timeToMaster?: number; // in seconds
+  seen: number;
+  correct: number;
+  easeFactor: number;
+  intervalDays: number;
+  repetitions: number;
+  nextReviewAt: string | null;
+  lastSeenAt: string | null;
+  updatedAt: string;
 }
 
 export interface StudySession {
   id: string;
-  date: Date;
-  charactersStudied: string[];
-  timeSpent: number; // in minutes
-  accuracy: number;
-  mode: 'flashcard' | 'quiz' | 'writing';
+  mode: 'flashcard' | 'quiz' | 'review' | 'writing' | 'listening';
+  startedAt: string;
+  endedAt: string;
   totalQuestions: number;
   correctAnswers: number;
+  accuracy: number;
+  durationSec: number;
 }
 
-export interface DetailedProgress extends UserProgress {
-  sessionsThisWeek: number;
-  averageAccuracy: number;
-  weakCharacters: string[];
-  strongCharacters: string[];
-  dailyStreak: number;
-  weeklyGoal: number;
-  characterMastery: Map<string, CharacterMastery>;
+export interface UserSettings {
+  dailyGoal: number;
+  autoAdvance: boolean;
+  audioEnabled: boolean;
+  theme: 'light' | 'dark' | 'system';
+  quizQuestionCount: number;
+  quizTimerEnabled: boolean;
+  quizTimerSeconds: number;
+  questionType: QuestionType;
+}
+
+export interface SyncState {
+  status: 'idle' | 'syncing' | 'error';
+  lastSyncAt: string | null;
+  error: string | null;
+}
+
+export interface ProgressState {
+  totalSeen: number;
+  totalCorrect: number;
+  currentStreak: number;
+  bestStreak: number;
+  score: number;
+  lastStudyDate: string | null;
+  characterProgress: Record<string, CharacterProgress>;
   studySessions: StudySession[];
-  totalStudyTime: number; // in minutes
-  lastStudyDate?: Date;
-  weeklyStats: {
-    sessionsCompleted: number;
-    totalTime: number;
-    averageAccuracy: number;
-    charactersLearned: number;
-  };
+  achievementUnlocks: Record<string, string>;
+  settings: UserSettings;
+  sync: SyncState;
+  updatedAt: string;
 }
 
 export interface QuizQuestion {
   character: KanaCharacter;
   options: string[];
   correctAnswer: string;
+  questionType: QuestionType;
 }
 
 export interface Achievement {

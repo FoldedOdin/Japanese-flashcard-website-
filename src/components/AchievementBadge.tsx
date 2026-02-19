@@ -39,10 +39,10 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({
   };
 
   const categoryColors = {
-    learning: 'from-blue-400 to-blue-600',
-    consistency: 'from-orange-400 to-red-600',
-    mastery: 'from-purple-400 to-purple-600',
-    special: 'from-yellow-400 to-amber-600'
+    learning: 'from-primary-400 to-primary-600',
+    consistency: 'from-secondary-400 to-secondary-600',
+    mastery: 'from-amber-400 to-amber-600',
+    special: 'from-emerald-400 to-emerald-600'
   };
 
   const currentSize = sizeClasses[size];
@@ -53,15 +53,15 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({
       <div 
         className={`
           ${currentSize.container} 
-          ${isUnlocked ? `bg-gradient-to-br ${gradientColor}` : 'bg-gray-300 dark:bg-gray-600'}
+          ${isUnlocked ? `bg-gradient-to-br ${gradientColor}` : 'bg-paper2'}
           rounded-full flex items-center justify-center
           transition-all duration-300 transform hover:scale-105
-          ${isUnlocked ? 'shadow-lg hover:shadow-xl' : 'opacity-60'}
+          ${isUnlocked ? 'shadow-soft hover:shadow-paper' : 'opacity-60'}
           ${isCompleted ? 'ring-4 ring-yellow-400 ring-opacity-50' : ''}
         `}
       >
         {/* Achievement Icon */}
-        <div className={`${currentSize.icon} ${isUnlocked ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+        <div className={`${currentSize.icon} ${isUnlocked ? 'text-white' : 'text-muted'}`}>
           {isUnlocked ? achievement.icon : '🔒'}
         </div>
 
@@ -72,7 +72,7 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({
               <CheckCircle className={`${currentSize.badgeIcon} text-white`} />
             </div>
           ) : !isUnlocked && achievement.progress === 0 ? (
-            <div className="flex items-center justify-center w-full h-full bg-gray-500 rounded-full">
+            <div className="flex items-center justify-center w-full h-full bg-muted rounded-full">
               <Lock className={`${currentSize.badgeIcon} text-white`} />
             </div>
           ) : null}
@@ -87,7 +87,7 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({
                 cy="50%"
                 r="45%"
                 fill="none"
-                stroke="rgba(255,255,255,0.3)"
+                stroke="rgba(255,255,255,0.35)"
                 strokeWidth="2"
               />
               <circle
@@ -108,23 +108,23 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({
 
       {/* Tooltip */}
       <div className="absolute z-10 mb-2 transition-opacity duration-200 transform -translate-x-1/2 opacity-0 pointer-events-none bottom-full left-1/2 group-hover:opacity-100">
-        <div className="px-3 py-2 text-xs text-center text-white bg-gray-900 rounded-lg dark:bg-gray-100 dark:text-gray-900 max-w-48">
+        <div className="px-3 py-2 text-xs text-center text-paper bg-ink rounded-lg max-w-48">
           <div className="font-semibold">{achievement.title}</div>
-          <div className="mt-1 text-gray-300 dark:text-gray-600">
+          <div className="mt-1 text-paper opacity-80">
             {achievement.description}
           </div>
           {showProgress && achievement.maxProgress > 1 && (
-            <div className="mt-1 text-gray-400 dark:text-gray-500">
+            <div className="mt-1 text-paper opacity-70">
               {achievement.progress}/{achievement.maxProgress}
             </div>
           )}
           {achievement.unlockedAt && (
-            <div className="mt-1 text-xs text-green-400 dark:text-green-600">
+            <div className="mt-1 text-xs text-emerald-300">
               Unlocked {achievement.unlockedAt.toLocaleDateString()}
             </div>
           )}
           {/* Tooltip Arrow */}
-          <div className="absolute transform -translate-x-1/2 border-4 border-transparent top-full left-1/2 border-t-gray-900 dark:border-t-gray-100"></div>
+          <div className="absolute transform -translate-x-1/2 border-4 border-transparent top-full left-1/2 border-t-ink"></div>
         </div>
       </div>
     </div>

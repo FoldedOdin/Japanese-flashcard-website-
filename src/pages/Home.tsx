@@ -4,140 +4,114 @@ import { BookOpen, Brain, Volume2, Trophy, ChevronRight } from 'lucide-react';
 
 const Home: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-secondary-500/20" />
-        <div className="relative px-4 py-24 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="mb-6 text-5xl font-bold text-white md:text-7xl">
-              Master <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-secondary-400">Japanese</span>
+    <div className="bg-paper text-ink">
+      <section className="relative overflow-hidden border-b border-border bg-paper">
+        <div className="absolute inset-0 bg-paper-texture opacity-80" />
+        <div className="absolute inset-0 bg-warm-gradient" />
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-sm uppercase tracking-[0.3em] text-muted">NihongoFlash</p>
+            <h1 className="mt-4 text-5xl font-semibold tracking-tight sm:text-6xl font-display">
+              Master Japanese with a calm, focused study ritual.
             </h1>
-            <p className="max-w-3xl mx-auto mb-8 text-xl text-gray-300 md:text-2xl">
-              Learn Hiragana and Katakana with interactive flashcards, audio pronunciation, 
-              and gamified quizzes. Make learning Japanese fun and effective!
+            <p className="mt-5 text-lg text-muted">
+              Learn Hiragana, Katakana, dakuten, and yōon combos with a warm, paper-inspired interface, spaced repetition,
+              and immersive audio.
             </p>
-            
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="mt-8 flex flex-wrap gap-4">
               <Link
                 to="/learn"
-                className="px-8 py-4 text-lg font-semibold text-white transition-all duration-200 transform rounded-full shadow-lg group bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 hover:scale-105"
+                className="inline-flex items-center space-x-2 rounded-full bg-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-primary-600"
               >
-                <span className="flex items-center space-x-2">
-                  <span>Start Learning</span>
-                  <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                </span>
+                <span>Start Learning</span>
+                <ChevronRight className="h-4 w-4" />
               </Link>
-              
               <Link
                 to="/quiz"
-                className="px-8 py-4 text-lg font-semibold transition-all duration-200 transform bg-transparent border-2 rounded-full border-accent-500 text-accent-400 hover:bg-accent-500 hover:text-white hover:scale-105"
+                className="inline-flex items-center space-x-2 rounded-full border border-border bg-surface px-6 py-3 text-sm font-semibold text-ink shadow-soft transition hover:border-primary-300"
               >
-                Take a Quiz
+                <span>Take a Quiz</span>
               </Link>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Features Section */}
-      <div className="py-24 bg-dark-800/50">
-        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">
-              Why Choose NihongoFlash?
-            </h2>
-            <p className="max-w-2xl mx-auto text-xl text-gray-400">
-              Our scientifically-designed learning system makes mastering Japanese characters 
-              easier and more enjoyable than ever before.
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-border bg-surface p-6 shadow-soft">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold">Guided Flashcards</h3>
+            <p className="mt-2 text-sm text-muted">
+              Beautiful cards, calm animations, and clear pronunciations for every character.
             </p>
           </div>
-
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-            <div className="p-6 text-center transition-colors border bg-dark-800 rounded-2xl border-dark-700 hover:border-primary-500">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl">
-                <BookOpen className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-white">Interactive Cards</h3>
-              <p className="text-gray-400">
-                Beautiful flip cards with both Hiragana and Katakana characters for immersive learning.
-              </p>
+          <div className="rounded-2xl border border-border bg-surface p-6 shadow-soft">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-100 text-secondary-600">
+              <Volume2 className="h-5 w-5" />
             </div>
-
-            <div className="p-6 text-center transition-colors border bg-dark-800 rounded-2xl border-dark-700 hover:border-secondary-500">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-secondary-500 to-secondary-600 rounded-2xl">
-                <Volume2 className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-white">Audio Pronunciation</h3>
-              <p className="text-gray-400">
-                Perfect your pronunciation with native audio for every character and word.
-              </p>
+            <h3 className="mt-4 text-lg font-semibold">Audio Practice</h3>
+            <p className="mt-2 text-sm text-muted">
+              Listen, repeat, and learn with built-in pronunciation and listening quizzes.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-surface p-6 shadow-soft">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+              <Brain className="h-5 w-5" />
             </div>
-
-            <div className="p-6 text-center transition-colors border bg-dark-800 rounded-2xl border-dark-700 hover:border-accent-500">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-accent-500 to-accent-600 rounded-2xl">
-                <Brain className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-white">Smart Quizzes</h3>
-              <p className="text-gray-400">
-                Adaptive quizzes that focus on characters you need to practice most.
-              </p>
+            <h3 className="mt-4 text-lg font-semibold">Smart Review</h3>
+            <p className="mt-2 text-sm text-muted">
+              Spaced repetition keeps you practicing the characters you need most.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-surface p-6 shadow-soft">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+              <Trophy className="h-5 w-5" />
             </div>
+            <h3 className="mt-4 text-lg font-semibold">Progress & Goals</h3>
+            <p className="mt-2 text-sm text-muted">
+              Daily goals, achievements, and study streaks keep you moving forward.
+            </p>
+          </div>
+        </div>
+      </section>
 
-            <div className="p-6 text-center transition-colors border bg-dark-800 rounded-2xl border-dark-700 hover:border-purple-500">
-              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl">
-                <Trophy className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-white">Progress Tracking</h3>
-              <p className="text-gray-400">
-                Track your learning journey with detailed progress statistics and achievements.
-              </p>
+      <section className="border-t border-border bg-paper2">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="rounded-2xl bg-surface p-6 shadow-soft">
+              <div className="text-4xl font-semibold text-primary-600">210</div>
+              <p className="mt-2 text-sm text-muted">Characters with full extended kana coverage.</p>
+            </div>
+            <div className="rounded-2xl bg-surface p-6 shadow-soft">
+              <div className="text-4xl font-semibold text-secondary-600">100%</div>
+              <p className="mt-2 text-sm text-muted">Audio support for every kana.</p>
+            </div>
+            <div className="rounded-2xl bg-surface p-6 shadow-soft">
+              <div className="text-4xl font-semibold text-amber-600">4</div>
+              <p className="mt-2 text-sm text-muted">Study modes: Flashcards, Review, Writing, Listening.</p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Stats Section */}
-      <div className="py-16 bg-gradient-to-r from-primary-500/10 to-secondary-500/10">
-        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="grid gap-8 text-center md:grid-cols-3">
-            <div>
-              <div className="mb-2 text-4xl font-bold md:text-5xl text-primary-400">92</div>
-              <div className="text-xl text-gray-300">Total Characters</div>
-              <div className="text-sm text-gray-500">Hiragana + Katakana</div>
-            </div>
-            <div>
-              <div className="mb-2 text-4xl font-bold md:text-5xl text-secondary-400">100%</div>
-              <div className="text-xl text-gray-300">Audio Coverage</div>
-              <div className="text-sm text-gray-500">Every character</div>
-            </div>
-            <div>
-              <div className="mb-2 text-4xl font-bold md:text-5xl text-accent-400">∞</div>
-              <div className="text-xl text-gray-300">Practice Modes</div>
-              <div className="text-sm text-gray-500">Unlimited learning</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="py-24">
-        <div className="max-w-4xl px-4 mx-auto text-center sm:px-6 lg:px-8">
-          <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl">
-            Ready to Start Your Japanese Journey?
-          </h2>
-          <p className="mb-8 text-xl text-gray-400">
-            Join thousands of learners who have mastered Japanese characters with NihongoFlash.
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="rounded-3xl border border-border bg-surface p-10 shadow-paper">
+          <h2 className="text-3xl font-semibold font-display">Ready to build a steady practice?</h2>
+          <p className="mt-3 text-muted">
+            Set a daily goal, review due cards, and see your progress every time you return.
           </p>
           <Link
             to="/learn"
-            className="inline-flex items-center px-8 py-4 space-x-2 text-lg font-semibold text-white transition-all duration-200 transform rounded-full shadow-lg bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 hover:scale-105"
+            className="mt-6 inline-flex items-center space-x-2 rounded-full bg-primary-500 px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-primary-600"
           >
-            <BookOpen className="w-5 h-5" />
-            <span>Begin Learning Now</span>
+            <BookOpen className="h-4 w-4" />
+            <span>Begin Learning</span>
           </Link>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

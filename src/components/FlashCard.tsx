@@ -64,18 +64,18 @@ const FlashCard: React.FC<FlashCardProps> = ({
       >
         {/* Front of card - Character */}
         <div className="absolute inset-0 w-full h-full backface-hidden">
-          <div className="w-full h-full bg-gradient-to-br from-dark-800 to-dark-900 rounded-2xl border border-dark-600 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 to-secondary-500/10" />
+          <div className="w-full h-full rounded-3xl border border-border bg-surface shadow-paper flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-paper-texture opacity-60" />
             
             <div 
-              className="text-8xl font-bold text-white mb-4 relative z-10"
+              className="text-8xl font-bold text-ink mb-4 relative z-10 font-japanese"
               id={`pronunciation-${character.id}`}
             >
               {character.character}
             </div>
             
-            <div className="text-sm text-gray-400 uppercase tracking-wider mb-4">
-              {character.type}
+            <div className="text-sm text-muted uppercase tracking-wider mb-4">
+              {character.type} • {character.category}
             </div>
             
             <button
@@ -87,12 +87,12 @@ const FlashCard: React.FC<FlashCardProps> = ({
                 }
               }}
               aria-label={`Replay pronunciation for ${character.character} (${character.type})`}
-              className="absolute bottom-6 right-6 p-3 bg-accent-500 hover:bg-accent-600 focus:ring-2 focus:ring-accent-400 focus:outline-none rounded-full text-white transition-colors shadow-lg"
+              className="absolute bottom-6 right-6 p-3 bg-primary-500 hover:bg-primary-600 focus:ring-2 focus:ring-primary-400 focus:outline-none rounded-full text-white transition-colors shadow-lg"
             >
               <Volume2 className="h-5 w-5" />
             </button>
             
-            <div className="absolute bottom-6 left-6 text-gray-500" aria-hidden="true">
+            <div className="absolute bottom-6 left-6 text-muted" aria-hidden="true">
               <RotateCcw className="h-5 w-5" />
             </div>
           </div>
@@ -100,14 +100,14 @@ const FlashCard: React.FC<FlashCardProps> = ({
 
         {/* Back of card - Romaji */}
         <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180">
-          <div className="w-full h-full bg-gradient-to-br from-secondary-800 to-secondary-900 rounded-2xl border border-secondary-600 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary-500/10 to-accent-500/10" />
+          <div className="w-full h-full rounded-3xl border border-border bg-paper2 shadow-paper flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-paper-texture opacity-60" />
             
-            <div className="text-6xl font-bold text-white mb-4 relative z-10" aria-live="polite">
+            <div className="text-6xl font-bold text-ink mb-4 relative z-10" aria-live="polite">
               {character.romaji}
             </div>
             
-            <div className="text-lg text-gray-300 mb-2">
+            <div className="text-lg text-muted mb-2">
               Pronunciation
             </div>
             
@@ -120,13 +120,13 @@ const FlashCard: React.FC<FlashCardProps> = ({
                 }
               }}
               aria-label={`Replay pronunciation for ${character.character} (${character.type})`}
-              className="flex items-center space-x-2 px-6 py-3 bg-accent-500 hover:bg-accent-600 focus:ring-2 focus:ring-accent-400 focus:outline-none rounded-full text-white transition-colors shadow-lg"
+              className="flex items-center space-x-2 px-6 py-3 bg-primary-500 hover:bg-primary-600 focus:ring-2 focus:ring-primary-400 focus:outline-none rounded-full text-white transition-colors shadow-lg"
             >
               <Volume2 className="h-5 w-5" />
               <span>Play Audio</span>
             </button>
             
-            <div className="absolute bottom-6 left-6 text-gray-500" aria-hidden="true">
+            <div className="absolute bottom-6 left-6 text-muted" aria-hidden="true">
               <RotateCcw className="h-5 w-5" />
             </div>
           </div>

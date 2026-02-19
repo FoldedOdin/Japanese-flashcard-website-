@@ -1,138 +1,129 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Zap, Home, Info, Mail, Sun, Moon, BarChart3, Trophy, BookOpen, Brain } from 'lucide-react';
+import { BookOpen, Brain, BarChart3, Trophy, Info, Mail, Sun, Moon, Menu, X, Settings, Home } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+
+const navItems = [
+  { to: '/', label: 'Home', icon: Home },
+  { to: '/learn', label: 'Learn', icon: BookOpen },
+  { to: '/quiz', label: 'Quiz', icon: Brain },
+  { to: '/statistics', label: 'Stats', icon: BarChart3 },
+  { to: '/achievements', label: 'Achievements', icon: Trophy },
+  { to: '/about', label: 'About', icon: Info },
+  { to: '/contact', label: 'Contact', icon: Mail },
+  { to: '/settings', label: 'Settings', icon: Settings },
+];
 
 const Navigation: React.FC = () => {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const resolvedTheme =
+    theme === 'system'
+      ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : theme;
 
   const isActive = (path: string) => location.pathname === path;
 
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
-    <nav className="transition-colors duration-300 bg-white border-b border-gray-200 dark:bg-dark-900 dark:border-dark-700">
-      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <Link
-            to="/"
-            className="flex items-center space-x-2 text-gray-900 transition-colors dark:text-white hover:text-primary-600 dark:hover:text-primary-400 focus:text-primary-600 dark:focus:text-primary-400"
-          >
-            <Zap className="w-8 h-8 text-accent-500" />
-            <span className="text-xl font-bold">NihongoFlash</span>
-          </Link>
-          
-          <div className="flex items-center space-x-6">
-            <div className="flex space-x-8">
-              <Link
-                to="/"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/')
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-dark-800'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-dark-800'
-                }`}
-                aria-current={isActive('/') ? 'page' : undefined}
-              >
-                <Home className="w-4 h-4" />
-                <span>Home</span>
-              </Link>
-              
-              <Link
-                to="/learn"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/learn')
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-dark-800'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-dark-800'
-                }`}
-                aria-current={isActive('/learn') ? 'page' : undefined}
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>Learn</span>
-              </Link>
-
-              <Link
-                to="/quiz"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/quiz')
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-dark-800'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-dark-800'
-                }`}
-                aria-current={isActive('/quiz') ? 'page' : undefined}
-              >
-                <Brain className="w-4 h-4" />
-                <span>Quiz</span>
-              </Link>
-              
-              <Link
-                to="/statistics"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/statistics')
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-dark-800'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-dark-800'
-                }`}
-                aria-current={isActive('/statistics') ? 'page' : undefined}
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Stats</span>
-              </Link>
-
-              <Link
-                to="/achievements"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/achievements')
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-dark-800'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-dark-800'
-                }`}
-                aria-current={isActive('/achievements') ? 'page' : undefined}
-              >
-                <Trophy className="w-4 h-4" />
-                <span>Awards</span>
-              </Link>
-              
-              <Link
-                to="/about"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/about')
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-dark-800'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-dark-800'
-                }`}
-                aria-current={isActive('/about') ? 'page' : undefined}
-              >
-                <Info className="w-4 h-4" />
-                <span>About</span>
-              </Link>
-              
-              <Link
-                to="/contact"
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/contact')
-                    ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-dark-800'
-                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-dark-800'
-                }`}
-                aria-current={isActive('/contact') ? 'page' : undefined}
-              >
-                <Mail className="w-4 h-4" />
-                <span>Contact</span>
-              </Link>
-            </div>
-
-            {/* Theme Toggle Button */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 text-gray-600 transition-colors bg-gray-100 rounded-lg dark:bg-dark-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              {theme === 'light' ? (
-                <Moon className="w-5 h-5" />
-              ) : (
-                <Sun className="w-5 h-5" />
-              )}
-            </button>
+    <header className="sticky top-0 z-40 border-b border-border bg-paper backdrop-blur">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-ink focus:shadow-soft"
+      >
+        Skip to content
+      </a>
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="flex items-center space-x-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-gradient text-primary-600 shadow-soft">
+            <span className="font-japanese text-xl">あ</span>
           </div>
+          <div>
+            <div className="text-lg font-semibold text-ink">NihongoFlash</div>
+            <div className="text-xs text-muted">Paper-light learning</div>
+          </div>
+        </Link>
+
+        <nav className="hidden items-center space-x-2 lg:flex">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex items-center space-x-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  isActive(item.to)
+                    ? 'bg-primary-100 text-primary-700'
+                    : 'text-muted hover:bg-paper2 hover:text-ink'
+                }`}
+                aria-current={isActive(item.to) ? 'page' : undefined}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={toggleTheme}
+            className="rounded-full border border-border bg-surface p-2 text-muted transition hover:text-ink"
+            aria-label={`Switch to ${resolvedTheme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {resolvedTheme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </button>
+          <button
+            className="rounded-full border border-border bg-surface p-2 text-muted transition hover:text-ink lg:hidden"
+            onClick={() => setIsOpen((prev) => !prev)}
+            aria-expanded={isOpen}
+            aria-label="Toggle navigation"
+          >
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
-    </nav>
+
+      {isOpen && (
+        <div className="border-t border-border bg-paper2 lg:hidden">
+          <div className="mx-auto flex max-w-6xl flex-col space-y-2 px-4 py-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={`flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium ${
+                    isActive(item.to)
+                      ? 'bg-primary-100 text-primary-700'
+                      : 'text-muted hover:bg-surface hover:text-ink'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 
 export default Navigation;
-

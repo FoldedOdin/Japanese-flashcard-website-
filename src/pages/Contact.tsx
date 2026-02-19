@@ -24,7 +24,6 @@ const Contact: React.FC = () => {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // Simulate form submission
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
       setSubmitStatus('success');
@@ -37,87 +36,81 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900">
-      {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-secondary-500/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-              Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-secondary-400">Touch</span>
+    <div className="bg-paper">
+      <section className="border-b border-border bg-paper">
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="text-sm uppercase tracking-[0.3em] text-muted">Contact</p>
+            <h1 className="mt-4 text-4xl font-semibold font-display text-ink">
+              Get in <span className="text-primary-600">Touch</span>
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
-              Have questions, suggestions, or need help? We'd love to hear from you! 
-              Your feedback helps us make NihongoFlash better for everyone.
+            <p className="mt-4 text-lg text-muted">
+              Have questions, suggestions, or need help? We'd love to hear from you. Your feedback helps us improve
+              NihongoFlash for every learner.
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Contact Information */}
             <div>
-              <h2 className="text-3xl font-bold text-white mb-8">Let's Connect</h2>
-              
+              <h2 className="text-2xl font-semibold text-ink mb-6">Let's Connect</h2>
               <div className="space-y-6 mb-8">
                 <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Mail className="h-6 w-6 text-white" />
+                  <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Mail className="h-6 w-6 text-primary-600" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-2">Email Us</h3>
-                    <p className="text-gray-400 mb-2">
-                      Send us a message and we'll respond within 24 hours.
-                    </p>
-                    <a href="mailto:hello@nihongoflash.com" className="text-primary-400 hover:text-primary-300">
+                    <h3 className="text-lg font-semibold text-ink mb-1">Email Us</h3>
+                    <p className="text-muted mb-2">Send us a message and we'll respond within 24 hours.</p>
+                    <a href="mailto:hello@nihongoflash.com" className="text-primary-600 hover:text-primary-500">
                       hello@nihongoflash.com
                     </a>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-dark-800 rounded-lg p-6 border border-dark-700">
-                <h3 className="text-lg font-semibold text-white mb-4">Frequently Asked Questions</h3>
+              <div className="bg-surface rounded-2xl p-6 border border-border shadow-soft">
+                <h3 className="text-lg font-semibold text-ink mb-4">Frequently Asked Questions</h3>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium text-white mb-1">Is NihongoFlash free?</h4>
-                    <p className="text-sm text-gray-400">Yes! All core features are completely free to use.</p>
+                    <h4 className="font-medium text-ink mb-1">Is NihongoFlash free?</h4>
+                    <p className="text-sm text-muted">Yes! All core features are completely free to use.</p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-white mb-1">Do I need to create an account?</h4>
-                    <p className="text-sm text-gray-400">No account needed! Your progress is saved locally in your browser.</p>
+                    <h4 className="font-medium text-ink mb-1">Do I need to create an account?</h4>
+                    <p className="text-sm text-muted">No account needed. Sign in only if you want sync across devices.</p>
                   </div>
                   <div>
-                    <h4 className="font-medium text-white mb-1">Can I use this offline?</h4>
-                    <p className="text-sm text-gray-400">The app works offline once loaded, though audio requires internet connection.</p>
+                    <h4 className="font-medium text-ink mb-1">Can I use this offline?</h4>
+                    <p className="text-sm text-muted">Yes. Once loaded, you can study offline and sync later.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Contact Form */}
             <div>
-              <div className="bg-dark-800 rounded-2xl p-8 border border-dark-700">
-                <h2 className="text-2xl font-bold text-white mb-6">Send us a Message</h2>
-                
+              <div className="bg-surface rounded-3xl p-8 border border-border shadow-soft">
+                <h2 className="text-2xl font-semibold text-ink mb-6">Send us a Message</h2>
+
                 {submitStatus === 'success' && (
-                  <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center space-x-3" role="status" aria-live="polite">
-                    <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
+                  <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center space-x-3" role="status" aria-live="polite">
+                    <CheckCircle className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                     <div>
-                      <p className="text-green-400 font-medium">Message sent successfully!</p>
-                      <p className="text-green-400/80 text-sm">We'll get back to you soon.</p>
+                      <p className="text-emerald-700 font-medium">Message sent successfully!</p>
+                      <p className="text-emerald-600 text-sm">We'll get back to you soon.</p>
                     </div>
                   </div>
                 )}
 
                 {submitStatus === 'error' && (
-                  <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center space-x-3" role="alert" aria-live="assertive">
-                    <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+                  <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center space-x-3" role="alert" aria-live="assertive">
+                    <AlertCircle className="h-5 w-5 text-rose-500 flex-shrink-0" />
                     <div>
-                      <p className="text-red-400 font-medium">Failed to send message</p>
-                      <p className="text-red-400/80 text-sm">Please try again later.</p>
+                      <p className="text-rose-700 font-medium">Failed to send message</p>
+                      <p className="text-rose-600 text-sm">Please try again later.</p>
                     </div>
                   </div>
                 )}
@@ -125,7 +118,7 @@ const Contact: React.FC = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+                      <label htmlFor="name" className="block text-sm font-medium text-muted mb-2">
                         Your Name *
                       </label>
                       <input
@@ -135,12 +128,12 @@ const Contact: React.FC = () => {
                         value={formData.name}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full px-4 py-3 bg-paper2 border border-border rounded-xl text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         placeholder="Enter your name"
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+                      <label htmlFor="email" className="block text-sm font-medium text-muted mb-2">
                         Email Address *
                       </label>
                       <input
@@ -150,14 +143,14 @@ const Contact: React.FC = () => {
                         value={formData.email}
                         onChange={handleInputChange}
                         required
-                        className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full px-4 py-3 bg-paper2 border border-border rounded-xl text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         placeholder="your@email.com"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-2">
+                    <label htmlFor="subject" className="block text-sm font-medium text-muted mb-2">
                       Subject *
                     </label>
                     <select
@@ -166,7 +159,7 @@ const Contact: React.FC = () => {
                       value={formData.subject}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-4 py-3 bg-paper2 border border-border rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="">Select a subject</option>
                       <option value="general">General Question</option>
@@ -178,7 +171,7 @@ const Contact: React.FC = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2">
+                    <label htmlFor="message" className="block text-sm font-medium text-muted mb-2">
                       Message *
                     </label>
                     <textarea
@@ -188,7 +181,7 @@ const Contact: React.FC = () => {
                       onChange={handleInputChange}
                       required
                       rows={6}
-                      className="w-full px-4 py-3 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                      className="w-full px-4 py-3 bg-paper2 border border-border rounded-xl text-ink placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                       placeholder="Tell us how we can help you..."
                     />
                   </div>
@@ -196,7 +189,7 @@ const Contact: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-secondary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    className="w-full px-6 py-4 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-paper disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                   >
                     <span className="flex items-center justify-center space-x-2">
                       {isSubmitting ? (
@@ -219,14 +212,12 @@ const Contact: React.FC = () => {
         </div>
       </div>
 
-      {/* Additional Info */}
-      <div className="py-16 bg-dark-800/30">
+      <div className="py-16 bg-paper2">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">We Value Your Feedback</h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
-            Your input helps us improve NihongoFlash for learners around the world. 
-            Whether you have suggestions for new features, found a bug, or just want 
-            to share your learning success story, we're here to listen.
+          <h2 className="text-2xl font-semibold text-ink mb-4">We Value Your Feedback</h2>
+          <p className="text-muted max-w-2xl mx-auto">
+            Your input helps us improve NihongoFlash for learners around the world. Share your ideas, report a bug,
+            or celebrate your progress with us.
           </p>
         </div>
       </div>

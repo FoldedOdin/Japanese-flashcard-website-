@@ -14,45 +14,45 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'hiragana_basics',
     title: 'Hiragana Explorer',
-    description: 'Learn your first 10 Hiragana characters',
+    description: 'Learn your first 20 Hiragana characters',
     icon: 'あ',
-    maxProgress: 10,
+    maxProgress: 20,
     progress: 0,
     category: 'learning'
   },
   {
     id: 'katakana_basics',
     title: 'Katakana Explorer',
-    description: 'Learn your first 10 Katakana characters',
+    description: 'Learn your first 20 Katakana characters',
     icon: 'ア',
-    maxProgress: 10,
+    maxProgress: 20,
     progress: 0,
     category: 'learning'
   },
   {
     id: 'half_hiragana',
     title: 'Hiragana Scholar',
-    description: 'Master 23 Hiragana characters (50%)',
+    description: 'Master 52 Hiragana characters (50%)',
     icon: '🎓',
-    maxProgress: 23,
+    maxProgress: 52,
     progress: 0,
     category: 'learning'
   },
   {
     id: 'full_hiragana',
     title: 'Hiragana Master',
-    description: 'Master all 46 Hiragana characters',
+    description: 'Master all 105 Hiragana characters',
     icon: '👑',
-    maxProgress: 46,
+    maxProgress: 105,
     progress: 0,
     category: 'mastery'
   },
   {
     id: 'full_katakana',
     title: 'Katakana Master',
-    description: 'Master all 46 Katakana characters',
+    description: 'Master all 105 Katakana characters',
     icon: '🏆',
-    maxProgress: 46,
+    maxProgress: 105,
     progress: 0,
     category: 'mastery'
   },
@@ -148,7 +148,7 @@ export const ACHIEVEMENTS: Achievement[] = [
     title: 'Completionist',
     description: 'Master all Hiragana and Katakana characters',
     icon: '🎊',
-    maxProgress: 92,
+    maxProgress: 210,
     progress: 0,
     category: 'special'
   }
