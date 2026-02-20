@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 *.local
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +25,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.local
+.env.development
+.env.production
+.env.test
+supabase/.env
+supabase/.env.*

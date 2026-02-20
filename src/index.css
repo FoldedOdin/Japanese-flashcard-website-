@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,8 +7,68 @@
 
 
 @layer base {
+  :root {
+    --paper: #f8f2e9;
+    --paper-2: #efe7dc;
+    --surface: #ffffff;
+    --ink: #1f1a16;
+    --muted: #6e6157;
+    --border: #e4d8ca;
+    --accent-50: #fff6e6;
+    --accent-100: #ffebc7;
+    --accent-200: #fddc9f;
+    --accent-300: #f9c86e;
+    --accent-400: #f0ad3c;
+    --accent-500: #d97706;
+    --accent-600: #b45309;
+    --accent-700: #92400e;
+    --accent-800: #78350f;
+    --accent-900: #5b2a0b;
+    --secondary-50: #f6f3f0;
+    --secondary-100: #ede4db;
+    --secondary-200: #dccab9;
+    --secondary-300: #c7ab92;
+    --secondary-400: #b08c6b;
+    --secondary-500: #936f4b;
+    --secondary-600: #7a5a3e;
+    --secondary-700: #644a35;
+    --secondary-800: #533e2e;
+    --secondary-900: #443327;
+  }
+
+  .dark {
+    --paper: #14110e;
+    --paper-2: #1b1713;
+    --surface: #1f1a16;
+    --ink: #f6eee4;
+    --muted: #b2a79b;
+    --border: #2c251f;
+    --accent-50: #2a1f13;
+    --accent-100: #3a2a16;
+    --accent-200: #5a3a1c;
+    --accent-300: #7a4c20;
+    --accent-400: #a25f1e;
+    --accent-500: #d97706;
+    --accent-600: #f59e0b;
+    --accent-700: #fbbf24;
+    --accent-800: #fcd34d;
+    --accent-900: #fde68a;
+    --secondary-50: #1c1713;
+    --secondary-100: #251e19;
+    --secondary-200: #332821;
+    --secondary-300: #473629;
+    --secondary-400: #5a4633;
+    --secondary-500: #6b553f;
+    --secondary-600: #8b6c53;
+    --secondary-700: #a98669;
+    --secondary-800: #c1a07e;
+    --secondary-900: #d9b891;
+  }
+
   body {
-    font-family: 'Noto Sans JP', system-ui, -apple-system, sans-serif;
+    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+    background-color: var(--paper);
+    color: var(--ink);
   }
 }
 
@@ -36,26 +96,57 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: var(--paper-2);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #b8a997;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #a09080;
 }
 
-/* Smooth transitions */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+/* Component-specific transitions */
+.flashcard {
+  transition: transform 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quiz-option {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button, a {
+  transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Focus styles */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--accent-500);
+  outline-offset: 2px;
+}
+
 .focus\:ring-2:focus {
   --tw-ring-shadow: 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
 }
@@ -123,4 +214,13 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Script type differentiation colors (WCAG compliant) */
+.script-hiragana {
+  color: #fbbf24; /* Warm amber for hiragana */
+}
+
+.script-katakana {
+  color: #60a5fa; /* Cool blue for katakana */
 }
