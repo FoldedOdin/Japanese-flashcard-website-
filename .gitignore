@@ -31,3 +31,6 @@ dist-ssr
 .env.test
 supabase/.env
 supabase/.env.*
+
+# Local-only docs
+IDEAS.md
