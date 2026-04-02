@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Loader2, AlertCircle, Eye, EyeOff, Github } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+
+const GoogleIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+  </svg>
+);
 
 const Auth: React.FC = () => {
   const { user } = useAuth();
@@ -14,23 +20,72 @@ const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [globalError, setGlobalError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // If already authenticated, bypass login
   if (user) {
     return <Navigate to={from} replace />;
   }
 
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+    let isValid = true;
+    
+    if (!email) {
+      errors.email = 'Email is required.';
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Please enter a valid email address.';
+      isValid = false;
+    }
+
+    if (!password) {
+      errors.password = 'Password is required.';
+      isValid = false;
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters.';
+      isValid = false;
+    }
+
+    if (!isLogin) {
+      if (!confirmPassword) {
+        errors.confirmPassword = 'Please confirm your password.';
+        isValid = false;
+      } else if (password !== confirmPassword) {
+        errors.confirmPassword = 'Passwords do not match.';
+        isValid = false;
+      }
+    }
+
+    setFieldErrors(errors);
+    return isValid;
+  };
+
+  const handleOAuth = async (provider: 'google' | 'github') => {
+    if (!supabase) return;
+    try {
+      await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin + from } });
+    } catch (err) {
+      if (err instanceof Error) setGlobalError(err.message);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) {
-      setError('Database configuration is missing. Check .env variables.');
+      setGlobalError('Database configuration is missing. Check .env variables.');
       return;
     }
     
+    if (!validateForm()) return;
+
     setLoading(true);
-    setError(null);
+    setGlobalError(null);
 
     try {
       if (isLogin) {
@@ -40,23 +95,34 @@ const Auth: React.FC = () => {
       } else {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        // Depending on email confirmation settings, may need to notify user
-        // Assuming auto-confirm or successful login for this demo
         navigate(from, { replace: true });
       }
     } catch (err) {
       if (err instanceof Error) {
-        setError(err.message);
+        setGlobalError(err.message);
       } else {
-        setError('An error occurred during authentication.');
+        setGlobalError('An error occurred during authentication.');
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const toggleAuthMode = () => {
+    setIsLogin(!isLogin);
+    setGlobalError(null);
+    setFieldErrors({});
+    setPassword('');
+    setConfirmPassword('');
+  };
+
+  const shakeAnimation = {
+    x: [-10, 10, -10, 10, 0],
+    transition: { duration: 0.4 }
+  };
+
   return (
-    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center bg-paper overflow-hidden px-4">
+    <div className="relative flex min-h-[calc(100vh-4rem)] items-center justify-center bg-paper overflow-hidden px-4 py-8">
       {/* Decorative Background */}
       <div className="absolute inset-0 bg-warm-gradient opacity-60 mix-blend-multiply" />
       <div className="absolute top-1/4 left-1/4 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-300 opacity-20 blur-3xl filter" />
@@ -68,82 +134,152 @@ const Auth: React.FC = () => {
         transition={{ duration: 0.5, type: 'spring', bounce: 0.3 }}
         className="relative z-10 w-full max-w-md rounded-3xl border border-border bg-surface p-8 shadow-paper"
       >
-        <div className="mb-8 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 text-primary-600 mb-6">
-            <span className="font-japanese text-3xl font-bold">扉</span>
+        <div className="mb-8 text-center group">
+          <div className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 text-primary-600 mb-6 cursor-help transition-all duration-300">
+            <motion.div 
+              className="absolute inset-0 rounded-full bg-primary-400 opacity-0 group-hover:opacity-40 blur-lg transition-opacity duration-500"
+            />
+            <span className="relative font-japanese text-3xl font-bold z-10">扉</span>
+            
+            {/* Tooltip */}
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity duration-300 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
+              扉 (Door) — Your gateway to Japanese mastery
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+            </div>
           </div>
+          
           <h2 className="text-3xl font-display font-bold text-ink">
-            {isLogin ? 'Welcome back' : 'Start your journey'}
+            {isLogin ? 'Welcome back 👋' : 'Start your Nihongo journey 🇯🇵'}
           </h2>
           <p className="mt-2 text-sm text-muted">
             {isLogin 
-              ? 'Enter your credentials to continue learning.' 
-              : 'Create an account to save your progress and streaks.'}
+              ? 'Continue your Japanese learning streak.' 
+              : 'Build streaks. Learn faster. Stay consistent.'}
           </p>
         </div>
 
         <AnimatePresence mode="wait">
-          {error && (
+          {globalError && (
             <motion.div
               initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginBottom: 24 }}
+              animate={{ opacity: 1, height: 'auto', marginBottom: 24, ...shakeAnimation }}
               exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-              className="overflow-hidden rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-100 flex items-center gap-3"
+              className="overflow-hidden rounded-xl bg-red-50 p-4 text-sm text-red-800 border border-red-200 flex items-center gap-3"
             >
               <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
-              <p>{error}</p>
+              <p>{globalError}</p>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
+          <motion.div animate={fieldErrors.email ? shakeAnimation : {}} className="space-y-1">
             <label className="text-sm font-semibold text-muted pl-1" htmlFor="email">
               Email Address
             </label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted/60" />
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-amber-500 transition-colors" />
               <input
                 id="email"
                 type="email"
                 autoComplete="email"
-                required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-2xl border border-border bg-paper-2 py-3.5 pl-12 pr-4 text-ink placeholder-muted/60 transition focus:border-primary-500 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary-500/10"
+                onChange={(e) => { setEmail(e.target.value); setFieldErrors({ ...fieldErrors, email: '' }); }}
+                onBlur={() => { if(!email) setFieldErrors({...fieldErrors, email: 'Email is required.'}) }}
+                className={`w-full rounded-2xl bg-gray-900 py-3.5 pl-12 pr-4 text-gray-200 placeholder-gray-500 transition-all border ${fieldErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-[3px] focus:ring-red-500/20' : 'border-white/10 focus:border-amber-500 focus:ring-[3px] focus:ring-amber-500/20'} focus:outline-none`}
                 placeholder="you@example.com"
               />
             </div>
-          </div>
+            {fieldErrors.email && (
+              <p className="pl-1 text-xs text-red-500">{fieldErrors.email}</p>
+            )}
+          </motion.div>
 
-          <div className="space-y-1">
+          <motion.div animate={fieldErrors.password ? shakeAnimation : {}} className="space-y-1">
             <label className="text-sm font-semibold text-muted pl-1" htmlFor="password">
               Password
             </label>
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted/60" />
+            <div className="relative group">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-amber-500 transition-colors" />
               <input
                 id="password"
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 autoComplete={isLogin ? 'current-password' : 'new-password'}
-                required
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-2xl border border-border bg-paper-2 py-3.5 pl-12 pr-4 text-ink placeholder-muted/60 transition focus:border-primary-500 focus:bg-surface focus:outline-none focus:ring-4 focus:ring-primary-500/10"
+                onChange={(e) => { setPassword(e.target.value); setFieldErrors({ ...fieldErrors, password: '' }); }}
+                className={`w-full rounded-2xl bg-gray-900 py-3.5 pl-12 pr-12 text-gray-200 placeholder-gray-500 transition-all border ${fieldErrors.password ? 'border-red-500 focus:border-red-500 focus:ring-[3px] focus:ring-red-500/20' : 'border-white/10 focus:border-amber-500 focus:ring-[3px] focus:ring-amber-500/20'} focus:outline-none`}
                 placeholder={isLogin ? '••••••••' : 'Min. 6 characters'}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors focus:outline-none"
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
-          </div>
+            {fieldErrors.password ? (
+              <p className="pl-1 text-xs text-red-500">{fieldErrors.password}</p>
+            ) : isLogin ? (
+              <div className="flex justify-end mt-1">
+                <button type="button" className="text-xs font-medium text-muted hover:text-primary-600 transition-colors">
+                  Forgot password?
+                </button>
+              </div>
+            ) : null}
+          </motion.div>
+
+          <AnimatePresence>
+            {!isLogin && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginTop: 20 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <motion.div animate={fieldErrors.confirmPassword ? shakeAnimation : {}} className="space-y-1">
+                  <label className="text-sm font-semibold text-muted pl-1" htmlFor="confirmPassword">
+                    Confirm Password
+                  </label>
+                  <div className="relative group">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-amber-500 transition-colors" />
+                    <input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={(e) => { setConfirmPassword(e.target.value); setFieldErrors({ ...fieldErrors, confirmPassword: '' }); }}
+                      className={`w-full rounded-2xl bg-gray-900 py-3.5 pl-12 pr-12 text-gray-200 placeholder-gray-500 transition-all border ${fieldErrors.confirmPassword ? 'border-red-500 focus:border-red-500 focus:ring-[3px] focus:ring-red-500/20' : 'border-white/10 focus:border-amber-500 focus:ring-[3px] focus:ring-amber-500/20'} focus:outline-none`}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors focus:outline-none"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                  {fieldErrors.confirmPassword && (
+                    <p className="pl-1 text-xs text-red-500">{fieldErrors.confirmPassword}</p>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             disabled={loading}
             type="submit"
-            className="group mt-8 flex w-full items-center justify-center space-x-2 rounded-2xl bg-primary-500 px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-primary-600 focus:outline-none focus:ring-4 focus:ring-primary-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+            className="group mt-8 flex w-full items-center justify-center space-x-2 rounded-2xl bg-amber-500 px-6 py-4 text-sm font-bold text-white shadow-soft transition hover:bg-amber-600 focus:outline-none focus:ring-[3px] focus:ring-amber-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             {loading ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>{isLogin ? 'Signing in...' : 'Creating account...'}</span>
+              </>
             ) : (
               <>
                 <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
@@ -153,15 +289,44 @@ const Auth: React.FC = () => {
           </motion.button>
         </form>
 
+        <div className="relative my-7">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-border"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="bg-surface px-4 text-muted border border-border rounded-full py-0.5">OR</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleOAuth('google')}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-paper-2 focus:outline-none focus:ring-[3px] focus:ring-border group"
+          >
+            <div className="text-gray-500 group-hover:text-primary-600 transition-colors">
+                <GoogleIcon />
+            </div>
+            <span>Google</span>
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => handleOAuth('github')}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-paper-2 focus:outline-none focus:ring-[3px] focus:ring-border group"
+          >
+            <Github className="h-5 w-5 text-gray-500 group-hover:text-ink transition-colors" />
+            <span>GitHub</span>
+          </motion.button>
+        </div>
+
         <div className="mt-8 text-center text-sm text-muted">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <button
             type="button"
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setError(null);
-            }}
-            className="font-bold text-primary-600 hover:text-primary-700 transition"
+            onClick={toggleAuthMode}
+            className="font-bold text-amber-600 hover:text-amber-700 transition underline-offset-4 hover:underline"
           >
             {isLogin ? 'Sign up' : 'Log in'}
           </button>
