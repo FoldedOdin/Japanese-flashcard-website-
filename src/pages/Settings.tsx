@@ -15,13 +15,13 @@ const Settings: React.FC = () => {
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const [importPayload, setImportPayload] = useState('');
 
-  const exportPayload = useMemo(() => exportProgress(), [state]);
+  const exportPayload = useMemo(() => exportProgress(), [exportProgress]);
 
   useEffect(() => {
     if (user) {
       syncWithSupabase(user.id);
     }
-  }, [user]);
+  }, [user, syncWithSupabase]);
 
   const handleImport = () => {
     const result = importProgress(importPayload);
@@ -184,7 +184,7 @@ const Settings: React.FC = () => {
                       try {
                         await signIn(email, password);
                         setAuthMessage('Signed in successfully.');
-                      } catch (error) {
+                      } catch {
                         setAuthMessage('Sign in failed.');
                       }
                     }}
@@ -197,7 +197,7 @@ const Settings: React.FC = () => {
                       try {
                         await signUp(email, password);
                         setAuthMessage('Check your email to confirm your account.');
-                      } catch (error) {
+                      } catch {
                         setAuthMessage('Sign up failed.');
                       }
                     }}
@@ -210,7 +210,7 @@ const Settings: React.FC = () => {
                       try {
                         await resetPassword(email);
                         setAuthMessage('Password reset email sent.');
-                      } catch (error) {
+                      } catch {
                         setAuthMessage('Unable to send reset email.');
                       }
                     }}

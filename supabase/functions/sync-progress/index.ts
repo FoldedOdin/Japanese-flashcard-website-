@@ -35,7 +35,7 @@ const getRateLimiter = () => {
     return ratelimitCache;
 };
 
-let supabaseClient: any = null;
+let supabaseClient: unknown = null;
 const getSupabase = () => {
     if (!supabaseClient) {
         supabaseClient = createClient(
@@ -67,7 +67,7 @@ serve(async (req) => {
 
   const authHeader = req.headers.get('Authorization')!;
   const token = authHeader.replace('Bearer ', '');
-  const supabase = getSupabase();
+  const supabase: any = getSupabase();
   const { data: { user }, error: authError } = await supabase.auth.getUser(token);
   
   if (authError || !user) {

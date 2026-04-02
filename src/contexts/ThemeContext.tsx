@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -8,7 +8,8 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+// eslint-disable-next-line react-refresh/only-export-components
+export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
@@ -37,21 +38,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     setThemeState(newTheme);
     if (newTheme === 'system') {
       localStorage.removeItem('nihongo-flash-theme');
-      const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (systemDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      return;
-    }
-
-    localStorage.setItem('nihongo-flash-theme', newTheme);
-
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('dark');
+      localStorage.setItem('nihongo-flash-theme', newTheme);
     }
   };
 
@@ -64,39 +52,28 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    if (theme === 'system') {
-      const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (systemDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-      return;
-    }
+    const root = document.documentElement;
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const themeToApply = theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
 
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    root.classList.remove('light', 'dark');
+    root.classList.add(themeToApply);
   }, [theme]);
 
-  // Listen for system theme changes
+  // Set up system preference listener for theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
+    const handleChange = () => {
       if (theme === 'system') {
-        if (e.matches) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(systemDark ? 'dark' : 'light');
       }
     };
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>

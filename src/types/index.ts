@@ -55,7 +55,7 @@ export interface SyncState {
 export interface PendingEvent {
   id: string; // UUID for idempotency
   type: 'ANSWER_SUBMITTED' | 'SESSION_COMPLETED';
-  payload: any;
+  payload: Record<string, unknown>;
   createdAt: number;
   retryCount: number;
 }

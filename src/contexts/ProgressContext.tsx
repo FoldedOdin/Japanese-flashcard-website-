@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
 import { CharacterProgress, ProgressState, StudySession, UserSettings } from '../types';
 import { applySrs, createCharacterProgress, isDueForReview } from '../utils/srs';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
@@ -154,8 +154,8 @@ const loadState = (): ProgressState => {
         settings: { ...defaultSettings, ...(parsed.settings || {}) },
         sync: { ...defaultState.sync, ...(parsed.sync || {}) },
       };
-    } catch (error) {
-      console.warn('Failed to parse saved progress state.', error);
+    } catch {
+       // Silent fail for load
     }
   }
 
@@ -172,11 +172,11 @@ const ProgressContext = createContext<ProgressContextValue | undefined>(undefine
 export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<ProgressState>(() => loadState());
 
-  const persist = (nextState: ProgressState) => {
+  const persist = useCallback((nextState: ProgressState) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
     idbSet('pending_events', nextState.pendingEvents).catch(console.error);
     return nextState;
-  };
+  }, []);
 
   // Load IndexedDB events after mount
   React.useEffect(() => {
@@ -192,7 +192,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return nextState;
   };
 
-  const recordAnswer = (characterId: string, gradeOrCorrect: boolean | number) => {
+  const recordAnswer = useCallback((characterId: string, gradeOrCorrect: boolean | number) => {
     setState((prev) => {
       const now = new Date();
       
@@ -248,9 +248,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       return persist(updateAchievements(nextState));
     });
-  };
+  }, [persist]);
 
-  const addSession = (session: StudySession) => {
+  const addSession = useCallback((session: StudySession) => {
     setState((prev) => {
       // ANTI-CHEAT: Validate session realistically
       // Minimum 0.5 seconds per question answered
@@ -280,9 +280,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       return persist(updateAchievements(nextState));
     });
-  };
+  }, [persist]);
 
-  const updateSettings = (settings: Partial<UserSettings>) => {
+  const updateSettings = useCallback((settings: Partial<UserSettings>) => {
     setState((prev) => {
       const nextState: ProgressState = {
         ...prev,
@@ -291,9 +291,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       return persist(nextState);
     });
-  };
+  }, [persist]);
 
-  const resetProgress = () => {
+  const resetProgress = useCallback(() => {
     setState((prev) => {
       const nextState: ProgressState = {
         ...defaultState,
@@ -304,11 +304,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       return persist(nextState);
     });
-  };
+  }, [persist]);
 
-  const exportProgress = () => JSON.stringify(state, null, 2);
+  const exportProgress = useCallback(() => JSON.stringify(state, null, 2), [state]);
 
-  const importProgress = (payload: string) => {
+  const importProgress = useCallback((payload: string) => {
     try {
       const parsed = JSON.parse(payload) as ProgressState;
       if (!parsed || !parsed.characterProgress) {
@@ -332,18 +332,18 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return persist(nextState);
       });
       return { success: true };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Unable to parse progress JSON.' };
     }
-  };
+  }, [persist]);
 
-  const getDueCharacterIds = (now = new Date()) => {
+  const getDueCharacterIds = useCallback((now = new Date()) => {
     return Object.values(state.characterProgress)
       .filter((item) => isDueForReview(item, now))
       .map((item) => item.characterId);
-  };
+  }, [state.characterProgress]);
 
-  const scheduleReview = (characterId: string) => {
+  const scheduleReview = useCallback((characterId: string) => {
     setState((prev) => {
       const now = new Date();
       const existing = prev.characterProgress[characterId] ?? createCharacterProgress(characterId, now);
@@ -362,9 +362,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       return persist(nextState);
     });
-  };
+  }, [persist]);
 
-  const unlockAchievement = (achievementId: string, unlockedAt = new Date().toISOString()) => {
+  const unlockAchievement = useCallback((achievementId: string, unlockedAt = new Date().toISOString()) => {
     setState((prev) => {
       if (prev.achievementUnlocks[achievementId]) return prev;
       const nextState: ProgressState = {
@@ -377,9 +377,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
       return persist(nextState);
     });
-  };
+  }, [persist]);
 
-  const syncWithSupabase = async (userId: string) => {
+  const syncWithSupabase = useCallback(async (userId: string) => {
     if (!supabase || !isSupabaseConfigured) {
       return;
     }
@@ -400,28 +400,28 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
            const jitter = Math.random() * 3000;
            await new Promise((resolve) => setTimeout(resolve, baseDelay + jitter));
 
-           const start = performance.now();
-           const { error } = await supabase.functions.invoke('sync-progress', {
+           const startList = performance.now();
+           const { error: invokeError } = await supabase.functions.invoke('sync-progress', {
              body: { events: eventsToSync }
            });
            
            Analytics.trackQueueMetrics({
               queue_depth: eventsToSync.length,
-              processing_time_ms: performance.now() - start
+              processing_time_ms: performance.now() - startList
            });
 
-           if (!error) {
+           if (!invokeError) {
              setState(prev => persist({
                 ...prev,
                 pendingEvents: prev.pendingEvents.filter(e => !eventsToSync.find(s => s.id === e.id))
              }));
            } else {
-             console.error("Queue submission failed. Maintaining locally.", error);
+             console.error("Queue submission failed. Maintaining locally.", invokeError);
              setState(prev => persist({
                 ...prev,
                 pendingEvents: prev.pendingEvents.map(e => ({ ...e, retryCount: e.retryCount + 1 }))
              }));
-             throw error;
+             throw invokeError;
            }
          }
       }
@@ -614,7 +614,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           sync: { status: 'idle', lastSyncAt: now, error: null },
         })
       );
-    } catch (error) {
+    } catch {
       setState((prev) =>
         persist({
           ...prev,
@@ -622,7 +622,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         })
       );
     }
-  };
+  }, [state, persist]);
 
   const value = useMemo(
     () => ({
@@ -638,7 +638,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       unlockAchievement,
       syncWithSupabase,
     }),
-    [state]
+    [state, recordAnswer, addSession, updateSettings, resetProgress, exportProgress, importProgress, getDueCharacterIds, scheduleReview, unlockAchievement, syncWithSupabase]
   );
 
   return <ProgressContext.Provider value={value}>{children}</ProgressContext.Provider>;

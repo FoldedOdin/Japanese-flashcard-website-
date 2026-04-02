@@ -36,7 +36,7 @@ const getSupabase = () => {
 const MAX_RETRIES = 3;
 const BATCH_SIZE = 50;
 
-serve(async (req) => {
+serve(async (_req) => {
     const redis = getRedis();
     const supabase = getSupabase();
 
@@ -115,7 +115,9 @@ serve(async (req) => {
                   }
                })
             });
-        } catch(e) {}
+        } catch(_e) {
+            // ignore telemetry failure
+        }
 
         return new Response(JSON.stringify({ 
             processed: processedCount, 
@@ -126,7 +128,7 @@ serve(async (req) => {
             status: 200,
         });
 
-    } catch (error) {
+    } catch (error: any) {
         Sentry.captureException(error);
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { "Content-Type": "application/json" },

@@ -1,0 +1,60 @@
+
+> nihongo-flash@1.0.0 lint
+> eslint .
+
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\scripts\recover-stuck-events.ts
+  42:14  error  '_e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\contexts\AuthContext.tsx
+  21:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\contexts\ProgressContext.tsx
+  157:14  error    '_error' is defined but never used                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  195:9   warning  The 'recordAnswer' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'recordAnswer' in its own useCallback() Hook              react-hooks/exhaustive-deps
+  253:9   warning  The 'addSession' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'addSession' in its own useCallback() Hook                  react-hooks/exhaustive-deps
+  285:9   warning  The 'updateSettings' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'updateSettings' in its own useCallback() Hook          react-hooks/exhaustive-deps
+  296:9   warning  The 'resetProgress' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'resetProgress' in its own useCallback() Hook            react-hooks/exhaustive-deps
+  309:9   warning  The 'exportProgress' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'exportProgress' in its own useCallback() Hook          react-hooks/exhaustive-deps
+  311:9   warning  The 'importProgress' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'importProgress' in its own useCallback() Hook          react-hooks/exhaustive-deps
+  335:14  error    'error' is defined but never used                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  340:9   warning  The 'getDueCharacterIds' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'getDueCharacterIds' in its own useCallback() Hook  react-hooks/exhaustive-deps
+  346:9   warning  The 'scheduleReview' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'scheduleReview' in its own useCallback() Hook          react-hooks/exhaustive-deps
+  367:9   warning  The 'unlockAchievement' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'unlockAchievement' in its own useCallback() Hook    react-hooks/exhaustive-deps
+  382:9   warning  The 'syncWithSupabase' function makes the dependencies of useMemo Hook (at line 641) change on every render. Move it inside the useMemo callback. Alternatively, wrap the definition of 'syncWithSupabase' in its own useCallback() Hook      react-hooks/exhaustive-deps
+  617:14  error    'error' is defined but never used                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  647:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                react-refresh/only-export-components
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\contexts\ThemeContext.tsx
+  72:5  error  Parsing error: ')' expected
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\hooks\useAudio.ts
+  31:58  error  'scriptType' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Auth.tsx
+   91:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:14  error    'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Contact.tsx
+  31:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Home.tsx
+  33:6  warning  React Hook useEffect has a missing dependency: 'words.length'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Quiz.tsx
+  151:6  warning  React Hook useEffect has a missing dependency: 'startQuiz'. Either include it or remove the dependency array                            react-hooks/exhaustive-deps
+  171:6  warning  React Hook useEffect has missing dependencies: 'handleAnswer' and 'isAnswerLocked'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Settings.tsx
+   18:57  warning  React Hook useMemo has a missing dependency: 'exportProgress'. Either include it or remove the dependency array      react-hooks/exhaustive-deps
+   24:6   warning  React Hook useEffect has a missing dependency: 'syncWithSupabase'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  187:32  error    'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  200:32  error    'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+  213:32  error    'error' is defined but never used                                                                                    @typescript-eslint/no-unused-vars
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\types\index.ts
+  58:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 31 problems (11 errors, 20 warnings)
+

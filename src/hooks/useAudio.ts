@@ -28,7 +28,7 @@ export const useAudio = () => {
     }
   }, []);
 
-  const playPronunciation = useCallback((romaji: string, scriptType?: string) => {
+  const playPronunciation = useCallback((romaji: string, _scriptType?: string) => {
     if (!audioEnabled) {
       return;
     }

@@ -39,7 +39,7 @@ async function main() {
          pipeline.lpush("event_queue", JSON.stringify(event));
          recoveredCount++;
       }
-    } catch (e) {
+    } catch (_error) {
       console.error("Failed to parse event in processing queue:", raw);
     }
   }

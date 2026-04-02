@@ -30,7 +30,7 @@ const AnimatedNihongo = () => {
       setIndex((prev) => (prev + 1) % words.length);
     }, 3500);
     return () => clearInterval(timer);
-  }, []);
+  }, [words.length]);
 
   const currentWord = words[index];
 
@@ -41,8 +41,7 @@ const AnimatedNihongo = () => {
   useEffect(() => {
     try {
       const handle = prepare(currentWord, '600 60px Fraunces');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = pretextLayout(handle, 800, 72) as any;
+      const result = pretextLayout(handle, 800, 72) as { width?: number };
       if (result && typeof result.width === 'number') {
         setTextWidth(result.width);
       }

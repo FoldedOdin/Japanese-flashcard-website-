@@ -1,0 +1,11 @@
+supabase/functions/process-queue/index.ts(1,23): error TS2792: Cannot find module 'https://deno.land/std@0.177.0/http/server.ts'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+supabase/functions/process-queue/index.ts(2,30): error TS2792: Cannot find module 'https://esm.sh/@supabase/supabase-js@2'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+supabase/functions/process-queue/index.ts(3,23): error TS2792: Cannot find module 'https://deno.land/x/upstash_redis@v1.22.0/mod.ts'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+supabase/functions/process-queue/index.ts(4,25): error TS2792: Cannot find module 'https://deno.land/x/sentry@8.47.0/index.ts'. Did you mean to set the 'moduleResolution' option to 'nodenext', or to add aliases to the 'paths' option?
+supabase/functions/process-queue/index.ts(7,8): error TS2304: Cannot find name 'Deno'.
+supabase/functions/process-queue/index.ts(18,18): error TS2304: Cannot find name 'Deno'.
+supabase/functions/process-queue/index.ts(19,20): error TS2304: Cannot find name 'Deno'.
+supabase/functions/process-queue/index.ts(28,13): error TS2304: Cannot find name 'Deno'.
+supabase/functions/process-queue/index.ts(29,13): error TS2304: Cannot find name 'Deno'.
+supabase/functions/process-queue/index.ts(104,25): error TS2304: Cannot find name 'Deno'.
+supabase/functions/process-queue/index.ts(108,28): error TS2304: Cannot find name 'Deno'.

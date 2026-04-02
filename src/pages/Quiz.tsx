@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { RotateCcw, Trophy, ArrowRight, Timer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import QuizQuestionComponent from '../components/QuizQuestion';
@@ -46,7 +46,7 @@ const Quiz: React.FC = () => {
     }
   }, [mode]);
 
-  const generateQuestions = (count: number = 10, type: QuestionType): QuizQuestion[] => {
+  const generateQuestions = useCallback((count: number = 10, type: QuestionType): QuizQuestion[] => {
     const shuffled = fisherYatesShuffle(sourceData);
     const selectedChars = shuffled.slice(0, count);
 
@@ -78,9 +78,9 @@ const Quiz: React.FC = () => {
         questionType: type,
       };
     });
-  };
+  }, [sourceData]);
 
-  const startQuiz = () => {
+  const startQuiz = useCallback(() => {
     const newQuestions = generateQuestions(questionCount, questionType);
     setQuestions(newQuestions);
     setCurrentQuestionIndex(0);
@@ -99,9 +99,9 @@ const Quiz: React.FC = () => {
       quizTimerEnabled: timerEnabled,
       quizTimerSeconds: timerSeconds,
     });
-  };
+  }, [questionCount, questionType, timerEnabled, timerSeconds, generateQuestions, updateSettings]);
 
-  const finalizeSession = (total = sessionTotal, correct = sessionCorrect) => {
+  const finalizeSession = useCallback((total = sessionTotal, correct = sessionCorrect) => {
     const end = new Date();
     const durationSec = Math.max(1, Math.round((end.getTime() - sessionStart.getTime()) / 1000));
     const session: StudySession = {
@@ -115,9 +115,9 @@ const Quiz: React.FC = () => {
       durationSec,
     };
     addSession(session);
-  };
+  }, [sessionTotal, sessionCorrect, sessionStart, addSession]);
 
-  const handleAnswer = (correct: boolean) => {
+  const handleAnswer = useCallback((correct: boolean) => {
     const currentQuestion = questions[currentQuestionIndex];
     if (!currentQuestion) return;
     setIsAnswerLocked(true);
@@ -144,11 +144,11 @@ const Quiz: React.FC = () => {
     } else {
       setCurrentQuestionIndex((prev) => prev + 1);
     }
-  };
+  }, [questions, currentQuestionIndex, recordAnswer, sessionTotal, sessionCorrect, sessionScore, finalizeSession]);
 
   useEffect(() => {
     startQuiz();
-  }, [mode]);
+  }, [mode, startQuiz]);
 
   useEffect(() => {
     setIsAnswerLocked(false);
@@ -168,7 +168,7 @@ const Quiz: React.FC = () => {
       });
     }, 1000);
     return () => window.clearInterval(interval);
-  }, [currentQuestionIndex, timerEnabled, timerSeconds, isQuizComplete]);
+  }, [currentQuestionIndex, timerEnabled, timerSeconds, isQuizComplete, isAnswerLocked, handleAnswer]);
 
   if (questions.length === 0) {
     return (

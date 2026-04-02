@@ -1,0 +1,40 @@
+
+> nihongo-flash@1.0.0 lint
+> eslint .
+
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\scripts\recover-stuck-events.ts
+  42:14  error  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\contexts\AuthContext.tsx
+  21:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\contexts\ProgressContext.tsx
+  157:14  error    '_error' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+  175:9   warning  The 'persist' function makes the dependencies of useCallback Hook (at line 625) change on every render. To fix this, wrap the definition of 'persist' in its own useCallback() Hook  react-hooks/exhaustive-deps
+  335:14  error    '_error' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+  617:14  error    '_error' is defined but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+  647:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                       react-refresh/only-export-components
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\contexts\ThemeContext.tsx
+  11:1   warning  Unused eslint-disable directive (no problems were reported from 'react-refresh/only-export-components')
+  14:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Auth.tsx
+  113:14  error  '_e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Contact.tsx
+  31:14  error  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Quiz.tsx
+  102:6  warning  React Hook useCallback has a missing dependency: 'generateQuestions'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  151:6  warning  React Hook useEffect has a missing dependency: 'startQuiz'. Either include it or remove the dependency array            react-hooks/exhaustive-deps
+
+C:\PROJECT\Freelance\Depaak\Japanese-flashcard-website-\src\pages\Settings.tsx
+  187:32  error  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+  200:32  error  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+  213:32  error  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 16 problems (9 errors, 7 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

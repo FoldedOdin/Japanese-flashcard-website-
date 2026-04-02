@@ -88,11 +88,10 @@ const Auth: React.FC = () => {
       try {
         authSchema.parse({ email: sanitizedEmail, password });
       } catch (errRaw: unknown) {
-        const error = errRaw as any;
-        if (error && error.errors) {
-          error.errors.forEach((err: any) => {
-            if (err.path && err.path[0]) {
-              errors[err.path[0] as string] = err.message;
+        if (errRaw instanceof z.ZodError) {
+          errRaw.issues.forEach((issue) => {
+            if (issue.path && issue.path[0]) {
+              errors[issue.path[0] as string] = issue.message;
             }
           });
           isValid = false;
@@ -111,7 +110,7 @@ const Auth: React.FC = () => {
 
       setFieldErrors(errors);
       return isValid;
-    } catch (e) {
+    } catch {
        return false;
     }
   };
