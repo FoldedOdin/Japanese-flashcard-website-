@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 import { Redis } from "https://deno.land/x/upstash_redis@v1.22.0/mod.ts";
 import { Ratelimit } from "https://deno.land/x/upstash_ratelimit@v1.2.1/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import * as Sentry from "https://deno.land/x/sentry@8.47.0/index.ts";
 
 Sentry.init({
@@ -34,7 +35,20 @@ const getRateLimiter = () => {
     return ratelimitCache;
 };
 
+let supabaseClient: any = null;
+const getSupabase = () => {
+    if (!supabaseClient) {
+        supabaseClient = createClient(
+            Deno.env.get("SUPABASE_URL")!,
+            Deno.env.get("SUPABASE_ANON_KEY")!,
+            { auth: { persistSession: false } }
+        );
+    }
+    return supabaseClient;
+};
+
 const EventSchema = z.object({
+  version: z.number().default(1),
   id: z.string().uuid(),
   type: z.enum(["ANSWER_SUBMITTED", "SESSION_COMPLETED"]),
   payload: z.any(),
@@ -53,12 +67,33 @@ serve(async (req) => {
 
   const authHeader = req.headers.get('Authorization')!;
   const token = authHeader.replace('Bearer ', '');
-  const jwtPayload = JSON.parse(atob(token.split('.')[1]));
-  const userId = jwtPayload.sub;
+  const supabase = getSupabase();
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  }
+  const userId = user.id;
+
   const ip = req.headers.get("x-forwarded-for") || "unknown";
 
   const redis = getRedis();
   const ratelimit = getRateLimiter();
+
+  // Load Shedding: Backpressure
+  const queueDepth = await redis.llen("event_queue");
+  if (queueDepth > 10000) {
+    return new Response(JSON.stringify({ status: "degraded", retryAfter: 5000 }), {
+       status: 429,
+       headers: { "Retry-After": "5" }
+    });
+  }
+
+  // Payload Limits
+  const rawBody = await req.text();
+  if (rawBody.length > 20000) { // Limit entire request to 20kB to prevent memory pressure
+    return new Response(JSON.stringify({ error: "Event payload too large" }), { status: 413 });
+  }
 
   // Rate Limiting
   const { success } = await ratelimit.limit(ip);
@@ -67,7 +102,7 @@ serve(async (req) => {
   }
 
   try {
-    const { events } = RequestSchema.parse(await req.json());
+    const { events } = RequestSchema.parse(JSON.parse(rawBody));
     const validEvents = [];
 
     // Idempotency & Anti-Replay

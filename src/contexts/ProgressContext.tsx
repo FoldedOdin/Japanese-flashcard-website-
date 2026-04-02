@@ -236,6 +236,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           [characterId]: updated,
         },
         pendingEvents: [...prev.pendingEvents, {
+            version: 1,
             id: crypto.randomUUID(),
             type: 'ANSWER_SUBMITTED' as const,
             payload: { characterId, gradeOrCorrect, timestamp: now.toISOString() },
@@ -268,6 +269,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...prev,
         studySessions: [session, ...prev.studySessions].slice(0, 200),
         pendingEvents: [...prev.pendingEvents, {
+            version: 1,
             id: crypto.randomUUID(),
             type: 'SESSION_COMPLETED' as const,
             payload: { session, timestamp: new Date().toISOString() },
@@ -393,6 +395,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (import.meta.env.VITE_ENABLE_API_LAYER === 'true') {
          const eventsToSync = [...state.pendingEvents].sort((a, b) => a.createdAt - b.createdAt);
          if (eventsToSync.length > 0) {
+           // Jitter: Thundering Herd Protection
+           const baseDelay = 2000;
+           const jitter = Math.random() * 3000;
+           await new Promise((resolve) => setTimeout(resolve, baseDelay + jitter));
+
            const start = performance.now();
            const { error } = await supabase.functions.invoke('sync-progress', {
              body: { events: eventsToSync }
