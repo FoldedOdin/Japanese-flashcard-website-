@@ -268,3 +268,11 @@ create policy "Achievements are deletable by owner"
   on public.achievement_unlocks
   for delete
   using (auth.uid() = user_id);
+
+alter table public.user_profiles force row level security;
+alter table public.user_settings force row level security;
+alter table public.user_progress force row level security;
+alter table public.character_progress force row level security;
+alter table public.study_sessions force row level security;
+alter table public.achievement_unlocks force row level security;
+

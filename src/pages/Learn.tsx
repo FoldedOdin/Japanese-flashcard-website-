@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, CheckCircle, PenLine, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import * as Sentry from '@sentry/react';
+import posthog from 'posthog-js';
 import { KanaCharacter } from '../types';
 import FlashCard from '../components/FlashCard';
 import ProgressBar from '../components/ProgressBar';
@@ -61,22 +63,48 @@ const Learn: React.FC = () => {
     
     setTimeout(() => setFeedbackToast(null), 2000);
 
+    Sentry.addBreadcrumb({
+      category: 'action',
+      message: 'Flashcard answered',
+      level: 'info',
+      data: { characterId: char.id, grade }
+    });
+
+    posthog.capture("card_answered", {
+      characterId: char.id,
+      grade,
+      scriptType: char.type,
+    });
+
     if (sessionQueue.length > 1) {
       setSessionQueue(sessionQueue.slice(1));
       setReviewFlipped(false);
     } else {
       setSessionQueue([]);
       setSessionCompleted(true);
+      
+      const totalReviewed = sessionStats.reviewed + 1;
+      const totalIncorrect = sessionStats.incorrect + (grade < 4 ? 1 : 0);
+      posthog.capture("session_completed", {
+        accuracy: Math.round(((totalReviewed - totalIncorrect) / Math.max(1, totalReviewed)) * 100),
+        cards_reviewed: totalReviewed
+      });
     }
   };
 
   const startSession = () => {
-    const queue = [...dueQueue, ...unseenQueue.slice(0, Math.max(0, state.settings.dailyGoal - dueQueue.length))].slice(0, state.settings.dailyGoal);
+    const newCount = Math.max(0, state.settings.dailyGoal - dueQueue.length);
+    const queue = [...dueQueue, ...unseenQueue.slice(0, newCount)].slice(0, state.settings.dailyGoal);
     setSessionQueue(queue);
     setSessionCompleted(false);
     setSessionStats({ reviewed: 0, incorrect: 0 });
     setTab('review');
     setReviewFlipped(false);
+
+    posthog.capture("session_started", {
+      due_count: dueQueue.length,
+      new_count: newCount,
+    });
   };
 
   const handleModeChange = (nextMode: 'hiragana' | 'katakana' | 'mixed') => {

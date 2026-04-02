@@ -52,6 +52,14 @@ export interface SyncState {
   error: string | null;
 }
 
+export interface PendingEvent {
+  id: string; // UUID for idempotency
+  type: 'ANSWER_SUBMITTED' | 'SESSION_COMPLETED';
+  payload: any;
+  createdAt: number;
+  retryCount: number;
+}
+
 export interface ProgressState {
   totalSeen: number;
   totalCorrect: number;
@@ -64,6 +72,7 @@ export interface ProgressState {
   achievementUnlocks: Record<string, string>;
   settings: UserSettings;
   sync: SyncState;
+  pendingEvents: PendingEvent[]; // Offline Queue
   updatedAt: string;
 }
 

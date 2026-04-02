@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import * as Sentry from '@sentry/react';
+import posthog from 'posthog-js';
 import { supabase } from '../lib/supabaseClient';
 
 interface AuthContextType {
@@ -29,10 +31,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    const handleUserUpdate = (currentUser: User | null) => {
+      setUser(currentUser);
+      
+      if (currentUser) {
+        Sentry.setUser({ id: currentUser.id, email: currentUser.email });
+        posthog.identify(currentUser.id, { email: currentUser.email });
+      } else {
+        Sentry.setUser(null);
+        posthog.reset();
+      }
+    };
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      handleUserUpdate(session?.user ?? null);
       setLoading(false);
     });
 
@@ -41,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      handleUserUpdate(session?.user ?? null);
       setLoading(false);
     });
 

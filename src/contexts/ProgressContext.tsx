@@ -47,6 +47,7 @@ const defaultState: ProgressState = {
     lastSyncAt: null,
     error: null,
   },
+  pendingEvents: [], // Offline Queue
   updatedAt: new Date().toISOString(),
 };
 
@@ -222,6 +223,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           ...prev.characterProgress,
           [characterId]: updated,
         },
+        pendingEvents: [...prev.pendingEvents, {
+            id: crypto.randomUUID(),
+            type: 'ANSWER_SUBMITTED',
+            payload: { characterId, gradeOrCorrect, timestamp: now.toISOString() },
+            createdAt: now.getTime(),
+            retryCount: 0
+        }],
         updatedAt: now.toISOString(),
       };
 
@@ -247,6 +255,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const nextState: ProgressState = {
         ...prev,
         studySessions: [session, ...prev.studySessions].slice(0, 200),
+        pendingEvents: [...prev.pendingEvents, {
+            id: crypto.randomUUID(),
+            type: 'SESSION_COMPLETED',
+            payload: { session, timestamp: new Date().toISOString() },
+            createdAt: new Date().getTime(),
+            retryCount: 0
+        }],
         updatedAt: new Date().toISOString(),
       };
       return persist(updateAchievements(nextState));
@@ -270,6 +285,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ...defaultState,
         settings: prev.settings,
         sync: prev.sync,
+        pendingEvents: [], // Reset pending events
         updatedAt: new Date().toISOString(),
       };
       return persist(nextState);
@@ -362,6 +378,31 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
 
     try {
+      if (import.meta.env.VITE_ENABLE_API_LAYER === 'true') {
+         // Enterprise Architecture: Edge Layer handles Sync via Upstash Queue
+         const eventsToSync = [...state.pendingEvents].sort((a, b) => a.createdAt - b.createdAt);
+         if (eventsToSync.length > 0) {
+           const { error } = await supabase.functions.invoke('sync-progress', {
+             body: { events: eventsToSync }
+           });
+           
+           if (!error) {
+             setState(prev => persist({
+                ...prev,
+                pendingEvents: prev.pendingEvents.filter(e => !eventsToSync.find(s => s.id === e.id))
+             }));
+           } else {
+             // Exponential backoff logic would trigger here based on retry bounds
+             console.error("Queue submission failed. Maintaining locally.", error);
+             setState(prev => persist({
+                ...prev,
+                pendingEvents: prev.pendingEvents.map(e => ({ ...e, retryCount: e.retryCount + 1 }))
+             }));
+             throw error;
+           }
+         }
+      }
+
       const [remoteProgress, remoteCharacters, remoteSessions, remoteSettings, remoteAchievements] =
         await Promise.all([
           supabase.from('user_progress').select('*').eq('user_id', userId).maybeSingle(),
