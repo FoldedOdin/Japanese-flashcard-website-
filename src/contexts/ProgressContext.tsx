@@ -5,7 +5,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 interface ProgressContextValue {
   state: ProgressState;
-  recordAnswer: (characterId: string, correct: boolean) => void;
+  recordAnswer: (characterId: string, gradeOrCorrect: boolean | number) => void;
   addSession: (session: StudySession) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
   resetProgress: () => void;
@@ -179,7 +179,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return nextState;
   };
 
-  const recordAnswer = (characterId: string, correct: boolean) => {
+  const recordAnswer = (characterId: string, gradeOrCorrect: boolean | number) => {
     setState((prev) => {
       const now = new Date();
       
@@ -192,7 +192,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       sessionStorage.setItem('last_answer_time', now.getTime().toString());
 
       const existing = prev.characterProgress[characterId] ?? createCharacterProgress(characterId, now);
-      const updated = applySrs(existing, correct, now);
+      const updated = applySrs(existing, gradeOrCorrect, now);
+
+      const isCorrect = typeof gradeOrCorrect === 'boolean' ? gradeOrCorrect : gradeOrCorrect >= 3;
 
       const today = getISODate(now);
       let currentStreak = prev.currentStreak;
@@ -211,8 +213,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const nextState: ProgressState = {
         ...prev,
         totalSeen: prev.totalSeen + 1,
-        totalCorrect: correct ? prev.totalCorrect + 1 : prev.totalCorrect,
-        score: correct ? prev.score + 10 : prev.score,
+        totalCorrect: isCorrect ? prev.totalCorrect + 1 : prev.totalCorrect,
+        score: isCorrect ? prev.score + 10 : prev.score,
         currentStreak,
         bestStreak,
         lastStudyDate: today,

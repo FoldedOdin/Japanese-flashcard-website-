@@ -19,10 +19,20 @@ export const createCharacterProgress = (characterId: string, now = new Date()): 
 
 export const applySrs = (
   current: CharacterProgress,
-  correct: boolean,
+  gradeOrCorrect: boolean | number,
   now = new Date()
 ): CharacterProgress => {
-  const grade = correct ? 4 : 2;
+  let grade: number;
+  let isCorrect: boolean;
+
+  if (typeof gradeOrCorrect === 'boolean') {
+    isCorrect = gradeOrCorrect;
+    grade = isCorrect ? 4 : 2;
+  } else {
+    grade = gradeOrCorrect;
+    isCorrect = grade >= 3;
+  }
+
   let easeFactor = current.easeFactor;
 
   // SM-2 ease factor adjustment
@@ -34,7 +44,7 @@ export const applySrs = (
   let repetitions = current.repetitions;
   let intervalDays = current.intervalDays;
 
-  if (correct) {
+  if (isCorrect) {
     repetitions += 1;
     if (repetitions === 1) {
       intervalDays = 1;
@@ -53,7 +63,7 @@ export const applySrs = (
   return {
     ...current,
     seen: current.seen + 1,
-    correct: correct ? current.correct + 1 : current.correct,
+    correct: isCorrect ? current.correct + 1 : current.correct,
     easeFactor,
     intervalDays,
     repetitions,
