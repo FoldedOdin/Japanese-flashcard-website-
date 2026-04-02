@@ -9,16 +9,30 @@ Sentry.init({
   tracesSampleRate: 1.0,
 });
 
-const redis = new Redis({
-  url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
-  token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
-});
+// Global Cache connection to reduce cold starts
+let redisClient: Redis | null = null;
+const getRedis = () => {
+  if (!redisClient) {
+    redisClient = new Redis({
+      url: Deno.env.get("UPSTASH_REDIS_REST_URL")!,
+      token: Deno.env.get("UPSTASH_REDIS_REST_TOKEN")!,
+    });
+  }
+  return redisClient;
+};
 
-const ratelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(50, "10 s"),
-  analytics: true,
-});
+// Rate limiter lazily loaded
+let ratelimitCache: Ratelimit | null = null;
+const getRateLimiter = () => {
+    if (!ratelimitCache) {
+      ratelimitCache = new Ratelimit({
+        redis: getRedis(),
+        limiter: Ratelimit.slidingWindow(50, "10 s"),
+        analytics: true,
+     });
+    }
+    return ratelimitCache;
+};
 
 const EventSchema = z.object({
   id: z.string().uuid(),
@@ -38,7 +52,13 @@ serve(async (req) => {
   }
 
   const authHeader = req.headers.get('Authorization')!;
+  const token = authHeader.replace('Bearer ', '');
+  const jwtPayload = JSON.parse(atob(token.split('.')[1]));
+  const userId = jwtPayload.sub;
   const ip = req.headers.get("x-forwarded-for") || "unknown";
+
+  const redis = getRedis();
+  const ratelimit = getRateLimiter();
 
   // Rate Limiting
   const { success } = await ratelimit.limit(ip);
@@ -52,13 +72,13 @@ serve(async (req) => {
 
     // Idempotency & Anti-Replay
     for (const event of events) {
-      // Reject if too old (e.g., > 24 hours)
-      if (Date.now() - event.createdAt > 86400000) {
+      // Replay Attack Protection: Reject if older than 5 minutes (300,000ms)
+      if (Date.now() - event.createdAt > 300000) {
         continue;
       }
 
-      // Check if already processed
-      const isProcessed = await redis.get(`processed:${event.id}`);
+      // Check Nonce + Idempotency logic via UUID presence scoped by User
+      const isProcessed = await redis.get(`processed:${userId}:${event.id}`);
       if (isProcessed) {
         continue;
       }
@@ -67,13 +87,13 @@ serve(async (req) => {
     }
 
     if (validEvents.length > 0) {
-      // 1. Mark as processed in Redis (idempotency key)
+      // 1. Mark as processed in Redis (idempotency key / nonce) storing for just the replay threshold (300s) + safety
       const pipeline = redis.pipeline();
       for (const event of validEvents) {
-        pipeline.setex(`processed:${event.id}`, 86400, "1"); // Keep cache for 24h
+        pipeline.setex(`processed:${userId}:${event.id}`, 600, "1"); // Keep cache for 10 min
         
-        // 2. Queue event to PgMQ or Redis Queue for async worker
-        pipeline.lpush("event_queue", JSON.stringify({ ...event, authHeader }));
+        // 2. Queue event to PgMQ or Redis Queue for async worker (ensure user_id is injected safely)
+        pipeline.lpush("event_queue", JSON.stringify({ ...event, userId }));
       }
       await pipeline.exec();
     }

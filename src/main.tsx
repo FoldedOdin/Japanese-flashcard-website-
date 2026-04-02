@@ -24,6 +24,7 @@ if (import.meta.env.VITE_ENABLE_SENTRY === 'true' || import.meta.env.PROD) {
     ],
     // Performance Monitoring
     tracesSampleRate: 1.0, // Capture 100% of the transactions (reduce in scale)
+    release: import.meta.env.VITE_VERCEL_GIT_COMMIT_SHA, // Track versions tied to source tags
     tracePropagationTargets: ["localhost", /^\/api/],
   });
 }

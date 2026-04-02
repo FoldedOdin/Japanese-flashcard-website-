@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, CheckCircle, PenLine, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as Sentry from '@sentry/react';
-import posthog from 'posthog-js';
 import { KanaCharacter } from '../types';
+import { Analytics } from '../lib/analytics';
 import FlashCard from '../components/FlashCard';
 import ProgressBar from '../components/ProgressBar';
 import WritingPractice from '../components/WritingPractice';
@@ -70,10 +70,11 @@ const Learn: React.FC = () => {
       data: { characterId: char.id, grade }
     });
 
-    posthog.capture("card_answered", {
+    Analytics.trackCardAnswered({
       characterId: char.id,
+      difficulty: grade >= 4 ? (grade === 5 ? "easy" : "good") : "hard",
       grade,
-      scriptType: char.type,
+      scriptType: char.type as "hiragana" | "katakana",
     });
 
     if (sessionQueue.length > 1) {
@@ -85,7 +86,7 @@ const Learn: React.FC = () => {
       
       const totalReviewed = sessionStats.reviewed + 1;
       const totalIncorrect = sessionStats.incorrect + (grade < 4 ? 1 : 0);
-      posthog.capture("session_completed", {
+      Analytics.trackSessionCompleted({
         accuracy: Math.round(((totalReviewed - totalIncorrect) / Math.max(1, totalReviewed)) * 100),
         cards_reviewed: totalReviewed
       });
@@ -101,7 +102,7 @@ const Learn: React.FC = () => {
     setTab('review');
     setReviewFlipped(false);
 
-    posthog.capture("session_started", {
+    Analytics.trackSessionStarted({
       due_count: dueQueue.length,
       new_count: newCount,
     });

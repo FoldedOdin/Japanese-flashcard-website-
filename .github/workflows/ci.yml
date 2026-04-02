@@ -34,6 +34,9 @@ jobs:
       - name: Build Project
         run: npm run build
 
+      - name: Database Schema & Migration Diff Validation
+        run: npx supabase db lint
+
       - name: Check Quality Gates
         if: failure()
         run: echo "Quality gates failed. Please fix before merging." && exit 1

@@ -276,3 +276,15 @@ alter table public.character_progress force row level security;
 alter table public.study_sessions force row level security;
 alter table public.achievement_unlocks force row level security;
 
+
+create table if not exists public.progress_events (
+  id uuid primary key default gen_random_uuid(),
+  idempotency_key uuid unique not null,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  event_type text not null,
+  payload jsonb not null,
+  created_at timestamptz not null default now()
+);
+create unique index if not exists idx_unique_event on public.progress_events(idempotency_key);
+alter table public.progress_events enable row level security;
+

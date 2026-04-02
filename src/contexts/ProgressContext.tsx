@@ -2,6 +2,8 @@ import React, { createContext, useContext, useMemo, useState } from 'react';
 import { CharacterProgress, ProgressState, StudySession, UserSettings } from '../types';
 import { applySrs, createCharacterProgress, isDueForReview } from '../utils/srs';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { get as idbGet, set as idbSet } from 'idb-keyval';
+import { Analytics } from '../lib/analytics';
 
 interface ProgressContextValue {
   state: ProgressState;
@@ -172,8 +174,18 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const persist = (nextState: ProgressState) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+    idbSet('pending_events', nextState.pendingEvents).catch(console.error);
     return nextState;
   };
+
+  // Load IndexedDB events after mount
+  React.useEffect(() => {
+    idbGet('pending_events').then(events => {
+      if (events && Array.isArray(events) && events.length > 0) {
+        setState(prev => ({ ...prev, pendingEvents: events }));
+      }
+    }).catch(console.error);
+  }, []);
 
   const updateAchievements = (nextState: ProgressState): ProgressState => {
     // Achievements are unlocked in Achievements page evaluation; this keeps space for future logic.
@@ -225,11 +237,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         },
         pendingEvents: [...prev.pendingEvents, {
             id: crypto.randomUUID(),
-            type: 'ANSWER_SUBMITTED',
+            type: 'ANSWER_SUBMITTED' as const,
             payload: { characterId, gradeOrCorrect, timestamp: now.toISOString() },
             createdAt: now.getTime(),
             retryCount: 0
-        }],
+        }].slice(-1000), // Enforce unbounded limit
         updatedAt: now.toISOString(),
       };
 
@@ -257,11 +269,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         studySessions: [session, ...prev.studySessions].slice(0, 200),
         pendingEvents: [...prev.pendingEvents, {
             id: crypto.randomUUID(),
-            type: 'SESSION_COMPLETED',
+            type: 'SESSION_COMPLETED' as const,
             payload: { session, timestamp: new Date().toISOString() },
             createdAt: new Date().getTime(),
             retryCount: 0
-        }],
+        }].slice(-1000), // Enforce unbounded limit
         updatedAt: new Date().toISOString(),
       };
       return persist(updateAchievements(nextState));
@@ -379,20 +391,24 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     try {
       if (import.meta.env.VITE_ENABLE_API_LAYER === 'true') {
-         // Enterprise Architecture: Edge Layer handles Sync via Upstash Queue
          const eventsToSync = [...state.pendingEvents].sort((a, b) => a.createdAt - b.createdAt);
          if (eventsToSync.length > 0) {
+           const start = performance.now();
            const { error } = await supabase.functions.invoke('sync-progress', {
              body: { events: eventsToSync }
            });
            
+           Analytics.trackQueueMetrics({
+              queue_depth: eventsToSync.length,
+              processing_time_ms: performance.now() - start
+           });
+
            if (!error) {
              setState(prev => persist({
                 ...prev,
                 pendingEvents: prev.pendingEvents.filter(e => !eventsToSync.find(s => s.id === e.id))
              }));
            } else {
-             // Exponential backoff logic would trigger here based on retry bounds
              console.error("Queue submission failed. Maintaining locally.", error);
              setState(prev => persist({
                 ...prev,
