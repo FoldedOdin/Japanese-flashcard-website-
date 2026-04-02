@@ -4,6 +4,15 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    headers: {
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data: https:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co;",
+      'X-Frame-Options': 'DENY',
+      'X-Content-Type-Options': 'nosniff',
+      'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+      'Referrer-Policy': 'strict-origin-when-cross-origin'
+    }
+  },
   plugins: [
     react(),
     VitePWA({

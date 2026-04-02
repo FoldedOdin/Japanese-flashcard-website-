@@ -2,8 +2,21 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, ArrowRight, Loader2, AlertCircle, Eye, EyeOff, Github } from 'lucide-react';
+import { z } from 'zod';
+import DOMPurify from 'dompurify';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+
+const authSchema = z.object({
+  email: z.string().email('Please enter a valid email address.'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters.')
+    .max(100, 'Password is too long.')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter.')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter.')
+    .regex(/[0-9]/, 'Password must contain at least one number.')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character.'),
+});
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
@@ -32,38 +45,75 @@ const Auth: React.FC = () => {
     return <Navigate to={from} replace />;
   }
 
+  const MAX_ATTEMPTS = 5;
+  const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
+
+  const checkRateLimit = () => {
+    const lockoutUntil = parseInt(localStorage.getItem('auth_lockout_until') || '0', 10);
+    if (lockoutUntil && Date.now() < lockoutUntil) {
+      const remainingMinutes = Math.ceil((lockoutUntil - Date.now()) / 60000);
+      setGlobalError(`Too many failed attempts. Try again in ${remainingMinutes} minute(s).`);
+      return false;
+    }
+    if (lockoutUntil && Date.now() > lockoutUntil) {
+      localStorage.removeItem('auth_attempts');
+      localStorage.removeItem('auth_lockout_until');
+    }
+    return true;
+  };
+
+  const recordFailedAttempt = () => {
+    const attempts = parseInt(localStorage.getItem('auth_attempts') || '0', 10) + 1;
+    localStorage.setItem('auth_attempts', attempts.toString());
+    if (attempts >= MAX_ATTEMPTS) {
+      const lockoutUntil = Date.now() + LOCKOUT_TIME;
+      localStorage.setItem('auth_lockout_until', lockoutUntil.toString());
+      return `Too many failed attempts. Try again in 15 minute(s).`;
+    }
+    return null;
+  };
+
+  const clearFailedAttempts = () => {
+    localStorage.removeItem('auth_attempts');
+    localStorage.removeItem('auth_lockout_until');
+  };
+
   const validateForm = () => {
-    const errors: Record<string, string> = {};
-    let isValid = true;
-    
-    if (!email) {
-      errors.email = 'Email is required.';
-      isValid = false;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid email address.';
-      isValid = false;
-    }
-
-    if (!password) {
-      errors.password = 'Password is required.';
-      isValid = false;
-    } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters.';
-      isValid = false;
-    }
-
-    if (!isLogin) {
-      if (!confirmPassword) {
-        errors.confirmPassword = 'Please confirm your password.';
-        isValid = false;
-      } else if (password !== confirmPassword) {
-        errors.confirmPassword = 'Passwords do not match.';
-        isValid = false;
+    try {
+      const sanitizedEmail = DOMPurify.sanitize(email);
+      
+      const errors: Record<string, string> = {};
+      let isValid = true;
+      
+      try {
+        authSchema.parse({ email: sanitizedEmail, password });
+      } catch (errRaw: unknown) {
+        const error = errRaw as any;
+        if (error && error.errors) {
+          error.errors.forEach((err: any) => {
+            if (err.path && err.path[0]) {
+              errors[err.path[0] as string] = err.message;
+            }
+          });
+          isValid = false;
+        }
       }
-    }
 
-    setFieldErrors(errors);
-    return isValid;
+      if (!isLogin) {
+        if (!confirmPassword) {
+          errors.confirmPassword = 'Please confirm your password.';
+          isValid = false;
+        } else if (password !== confirmPassword) {
+          errors.confirmPassword = 'Passwords do not match.';
+          isValid = false;
+        }
+      }
+
+      setFieldErrors(errors);
+      return isValid;
+    } catch (e) {
+       return false;
+    }
   };
 
   const handleOAuth = async (provider: 'google' | 'github') => {
@@ -82,18 +132,26 @@ const Auth: React.FC = () => {
       return;
     }
     
+    if (!checkRateLimit()) return;
     if (!validateForm()) return;
 
     setLoading(true);
     setGlobalError(null);
 
     try {
+      const sanitizedEmail = DOMPurify.sanitize(email);
+      
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const { error } = await supabase.auth.signInWithPassword({ email: sanitizedEmail, password });
+        if (error) {
+          const lockoutMsg = recordFailedAttempt();
+          if (lockoutMsg) throw new Error(lockoutMsg);
+          throw error;
+        }
+        clearFailedAttempts();
         navigate(from, { replace: true });
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ email: sanitizedEmail, password });
         if (error) throw error;
         navigate(from, { replace: true });
       }

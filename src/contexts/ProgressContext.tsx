@@ -182,6 +182,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const recordAnswer = (characterId: string, correct: boolean) => {
     setState((prev) => {
       const now = new Date();
+      
+      // ANTI-CHEAT: Prevent rapid-fire bot answers (min 300ms between answers)
+      const lastAnswerTime = parseInt(sessionStorage.getItem('last_answer_time') || '0', 10);
+      if (now.getTime() - lastAnswerTime < 300) {
+        console.warn('Anti-cheat: Answer submitted too quickly. Ignoring.');
+        return prev;
+      }
+      sessionStorage.setItem('last_answer_time', now.getTime().toString());
+
       const existing = prev.characterProgress[characterId] ?? createCharacterProgress(characterId, now);
       const updated = applySrs(existing, correct, now);
 
@@ -220,6 +229,19 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const addSession = (session: StudySession) => {
     setState((prev) => {
+      // ANTI-CHEAT: Validate session realistically
+      // Minimum 0.5 seconds per question answered
+      if (session.totalQuestions > 0 && session.durationSec > 0) {
+        if (session.durationSec / session.totalQuestions < 0.5) {
+          console.warn('Anti-cheat: Session completed impossibly fast.');
+          return prev;
+        }
+      }
+      if (session.correctAnswers > session.totalQuestions) {
+        console.warn('Anti-cheat: Cannot have more correct answers than total questions.');
+        return prev;
+      }
+
       const nextState: ProgressState = {
         ...prev,
         studySessions: [session, ...prev.studySessions].slice(0, 200),
@@ -415,6 +437,12 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const totals = recalculateTotals(mergedCharacterProgress);
       const lastStudyDate =
         (state.lastStudyDate || '') > (remoteState.lastStudyDate || '') ? state.lastStudyDate : remoteState.lastStudyDate;
+      // ANTI-CHEAT bounds checking
+      if (totals.totalCorrect > totals.totalSeen) {
+        totals.totalCorrect = totals.totalSeen;
+      }
+      totals.score = totals.totalCorrect * 10;
+
       const mergedState: ProgressState = {
         ...state,
         ...remoteState,
@@ -430,6 +458,11 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           lastStudyDate === state.lastStudyDate ? state.currentStreak : remoteState.currentStreak,
         updatedAt: new Date().toISOString(),
       };
+
+      // Ensure streak anomaly prevention (backend authoritative preference but we enforce sanity check)
+      if (mergedState.currentStreak > mergedState.bestStreak) {
+         mergedState.bestStreak = mergedState.currentStreak;
+      }
 
       const now = new Date().toISOString();
 
@@ -509,7 +542,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         });
       }
 
-      setState((prev) =>
+      setState(() =>
         persist({
           ...mergedState,
           sync: { status: 'idle', lastSyncAt: now, error: null },
