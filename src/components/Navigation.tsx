@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, Brain, BarChart3, Trophy, Info, Mail, Sun, Moon, Menu, X, Settings, Home } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { BookOpen, Brain, BarChart3, Trophy, Info, Mail, Sun, Moon, Menu, X, Settings, Home, LogIn, LogOut } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
   { to: '/', label: 'Home', icon: Home },
@@ -16,7 +17,9 @@ const navItems = [
 
 const Navigation: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const resolvedTheme =
@@ -25,6 +28,11 @@ const Navigation: React.FC = () => {
       : theme;
 
   const isActive = (path: string) => location.pathname === path;
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (['/', '/about', '/contact'].includes(item.to)) return true;
+    return !!user;
+  });
 
   useEffect(() => {
     setIsOpen(false);
@@ -60,7 +68,7 @@ const Navigation: React.FC = () => {
         </Link>
 
         <nav className="hidden items-center space-x-2 lg:flex">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
@@ -88,6 +96,28 @@ const Navigation: React.FC = () => {
           >
             {resolvedTheme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </button>
+
+          {user ? (
+            <button
+              onClick={() => {
+                signOut();
+                navigate('/');
+              }}
+              className="hidden lg:flex rounded-full border border-border bg-surface p-2 text-muted transition hover:text-red-600 hover:border-red-200"
+              title="Sign Out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden lg:flex items-center space-x-1.5 rounded-full border border-border bg-primary-50 px-4 py-1.5 text-sm font-semibold text-primary-700 transition hover:bg-primary-100"
+            >
+              <LogIn className="h-4 w-4" />
+              <span>Log In</span>
+            </Link>
+          )}
+
           <button
             className="rounded-full border border-border bg-surface p-2 text-muted transition hover:text-ink lg:hidden"
             onClick={() => setIsOpen((prev) => !prev)}
@@ -102,7 +132,7 @@ const Navigation: React.FC = () => {
       {isOpen && (
         <div className="border-t border-border bg-paper2 lg:hidden">
           <div className="mx-auto flex max-w-6xl flex-col space-y-2 px-4 py-4">
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
@@ -119,6 +149,30 @@ const Navigation: React.FC = () => {
                 </Link>
               );
             })}
+            <div className="pt-2 mt-2 border-t border-border">
+              {user ? (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    signOut();
+                    navigate('/');
+                  }}
+                  className="flex w-full items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="flex w-full items-center space-x-2 rounded-lg bg-primary-100 px-3 py-2 text-sm font-medium text-primary-700 hover:bg-primary-200"
+                >
+                  <LogIn className="h-4 w-4" />
+                  <span>Log In</span>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       )}

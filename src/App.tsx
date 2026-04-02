@@ -12,6 +12,9 @@ import Achievements from './pages/Achievements';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Settings from './pages/Settings';
+import Auth from './pages/Auth';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const AppLayout: React.FC = () => (
   <div className="min-h-screen bg-paper text-ink transition-colors duration-300">
@@ -30,34 +33,28 @@ const router = createBrowserRouter(
       element: <AppLayout />,
       children: [
         { index: true, element: <Home /> },
-        { path: 'learn', element: <Learn /> },
-        { path: 'quiz', element: <Quiz /> },
-        { path: 'statistics', element: <Statistics /> },
-        { path: 'achievements', element: <Achievements /> },
+        { path: 'login', element: <Auth /> },
         { path: 'about', element: <About /> },
         { path: 'contact', element: <Contact /> },
-        { path: 'settings', element: <Settings /> },
+        { path: 'learn', element: <ProtectedRoute><Learn /></ProtectedRoute> },
+        { path: 'quiz', element: <ProtectedRoute><Quiz /></ProtectedRoute> },
+        { path: 'statistics', element: <ProtectedRoute><Statistics /></ProtectedRoute> },
+        { path: 'achievements', element: <ProtectedRoute><Achievements /></ProtectedRoute> },
+        { path: 'settings', element: <ProtectedRoute><Settings /></ProtectedRoute> },
       ],
     },
-  ],
-  {
-    future: {
-      v7_startTransition: true,
-      v7_relativeSplatPath: true,
-    },
-  }
+  ]
 );
 
 function App() {
   return (
-    <ThemeProvider>
-      <ProgressProvider>
-        <RouterProvider
-          router={router}
-          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-        />
-      </ProgressProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider>
+        <ProgressProvider>
+          <RouterProvider router={router} />
+        </ProgressProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 
