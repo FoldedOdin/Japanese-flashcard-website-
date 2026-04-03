@@ -36,3 +36,5 @@ supabase/.env.*
 IDEAS.md
 nihongoflash_overview.md
 lint_output.txt
+replacements.txt
+redact_token.py
