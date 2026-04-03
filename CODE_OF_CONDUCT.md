@@ -26,7 +26,18 @@ Examples of unacceptable behavior by participants include:
 
 Project maintainers are responsible for clarifying the standards of acceptable behavior and are expected to take appropriate and fair corrective action in response to any instances of unacceptable behavior.
 
-Maintainers have the right and responsibility to remove, edit, or reject comments, commits, code, wiki edits, issues, and other contributions that are not aligned to this Code of Conduct, or to ban temporarily or permanently any contributor for other behaviors that they deem inappropriate, threatening, offensive, or harmful.
+## Enforcement Guidelines
+
+Project maintainers will follow these guidelines in determining the consequences for any action they deem in violation of this Code of Conduct:
+
+1. **Correction**: A private, written warning, providing clarity around the nature of the violation and an explanation of why the behavior was inappropriate.
+2. **Warning**: A warning with consequences for continued behavior. No interaction with the people involved, including unsolicited interaction with those enforcing the Code of Conduct, for a specified period of time.
+3. **Temporary Ban**: A temporary ban from any sort of interaction or communication with the project community for a specified period of time.
+4. **Permanent Ban**: A permanent ban from any sort of interaction or communication with the project community.
+
+## Confidentiality
+
+All reports will be handled with strict confidentiality. The identity of the reporter will not be disclosed without their explicit consent.
 
 ## Scope
 
@@ -34,4 +45,4 @@ This Code of Conduct applies both within project spaces and in public spaces whe
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team at support@nihongo.com. All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project maintainers via GitHub Issues (private mode) or by contacting the repository owner directly. All complaints will be reviewed and investigated.
