@@ -4,7 +4,7 @@ import { LucideIcon } from 'lucide-react';
 interface StatisticsCardProps {
   title: string;
   value: string | number;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   icon: LucideIcon;
   color?: 'primary' | 'secondary' | 'accent' | 'green' | 'red' | 'yellow';
   trend?: {
@@ -59,9 +59,9 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
           {value}
         </p>
         {subtitle && (
-          <p className="text-sm text-muted">
+          <div className="text-sm text-muted">
             {subtitle}
-          </p>
+          </div>
         )}
       </div>
     </div>

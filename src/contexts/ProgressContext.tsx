@@ -45,6 +45,8 @@ const defaultState: ProgressState = {
   achievementUnlocks: {},
   kanaCity: {},
   settings: defaultSettings,
+  gamification: { xp: 0, level: 1, streakShields: 0 },
+  missions: [],
   sync: {
     status: 'idle',
     lastSyncAt: null,
@@ -279,6 +281,32 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }].slice(-1000), // Enforce unbounded limit
         updatedAt: new Date().toISOString(),
       };
+      
+      // Async Edge Function call for Server-Side Truth (XP, Streaks)
+      const sb = supabase;
+      if (navigator.onLine && sb) {
+        sb.auth.getSession().then(({ data }) => {
+          if (data?.session) {
+             sb.functions.invoke('process-session', {
+               body: { session, characterUpdates: [] }
+             }).then((res) => {
+               if (res.data && res.data.success) {
+                 setState(s => persist({
+                   ...s,
+                   currentStreak: res.data.currentStreak,
+                   bestStreak: res.data.bestStreak,
+                   gamification: {
+                     ...s.gamification,
+                     xp: s.gamification.xp + res.data.xpGained,
+                     level: res.data.newLevel
+                   }
+                 }));
+               }
+             }).catch(console.error);
+          }
+        });
+      }
+
       return persist(updateAchievements(nextState));
     });
   }, [persist]);
@@ -427,7 +455,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
          }
       }
 
-      const [remoteProgress, remoteCharacters, remoteSessions, remoteSettings, remoteAchievements, remoteDistricts] =
+      const [remoteProgress, remoteCharacters, remoteSessions, remoteSettings, remoteAchievements, remoteDistricts, remoteGamification, remoteMissions, remoteShields] =
         await Promise.all([
           supabase.from('user_progress').select('*').eq('user_id', userId).maybeSingle(),
           supabase.from('character_progress').select('*').eq('user_id', userId),
@@ -435,6 +463,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           supabase.from('user_settings').select('*').eq('user_id', userId).maybeSingle(),
           supabase.from('achievement_unlocks').select('*').eq('user_id', userId),
           supabase.from('kana_city_districts').select('*').eq('user_id', userId),
+          supabase.from('gamification_profiles').select('*').eq('user_id', userId).maybeSingle(),
+          supabase.from('missions').select('*').eq('user_id', userId),
+          supabase.from('streak_shields').select('*').eq('user_id', userId).maybeSingle(),
         ]);
 
       const remoteCharacterProgress: Record<string, CharacterProgress> = {};
@@ -492,6 +523,21 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         studySessions: remoteSessionsData,
         achievementUnlocks: remoteAchievementsData,
         kanaCity: remoteCityData,
+        gamification: {
+          xp: remoteGamification.data?.xp || 0,
+          level: remoteGamification.data?.level || 1,
+          streakShields: remoteShields.data?.shield_count || 0,
+        },
+        missions: (remoteMissions.data || []).map((m: Record<string, unknown>) => ({
+          id: m.id as string,
+          type: m.type as 'daily' | 'weekly',
+          description: m.description as string,
+          targetValue: m.target_value as number,
+          currentValue: m.current_value as number,
+          isCompleted: m.is_completed as boolean,
+          xpReward: m.xp_reward as number,
+          expiresAt: m.expires_at as string
+        })),
         settings: {
           ...defaultSettings,
           ...(remoteSettings.data

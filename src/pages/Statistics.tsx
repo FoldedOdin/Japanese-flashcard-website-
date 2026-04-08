@@ -80,7 +80,16 @@ const Statistics: React.FC = () => {
           <StatisticsCard
             title="Current Streak"
             value={state.currentStreak}
-            subtitle={`Best: ${state.bestStreak} days`}
+            subtitle={
+              <span className="flex items-center space-x-1">
+                <span>Best: {state.bestStreak} days</span>
+                {state.gamification?.streakShields > 0 && (
+                  <span className="inline-flex items-center ml-2 px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">
+                    🛡️ {state.gamification.streakShields} Active
+                  </span>
+                )}
+              </span>
+            }
             icon={Zap}
             color="accent"
           />
@@ -160,6 +169,40 @@ const Statistics: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Missions Section */}
+        {state.missions && state.missions.length > 0 && (
+          <div className="p-6 bg-surface border border-border rounded-2xl shadow-soft mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="flex items-center text-lg font-semibold text-ink">
+                <Target className="w-5 h-5 mr-2 text-rose-500" />
+                Active Missions
+              </h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {state.missions.map(mission => (
+                <div key={mission.id} className="p-4 border border-border rounded-xl bg-paper flex flex-col">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-semibold text-sm text-ink pr-4">{mission.description}</span>
+                    <span className="text-xs font-bold bg-primary-100 text-primary-700 px-2 py-1 rounded-md shrink-0">+{mission.xpReward} XP</span>
+                  </div>
+                  <div className="mt-auto pt-4">
+                    <div className="flex justify-between text-xs text-muted mb-1">
+                      <span>{mission.currentValue} / {mission.targetValue}</span>
+                      <span>{mission.isCompleted ? 'Done!' : `${Math.round((mission.currentValue / mission.targetValue) * 100)}%`}</span>
+                    </div>
+                    <div className="w-full h-2 bg-paper2 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-500 ${mission.isCompleted ? 'bg-emerald-500' : 'bg-primary-500'}`}
+                        style={{ width: `${Math.min((mission.currentValue / mission.targetValue) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="p-6 bg-surface border border-border rounded-2xl shadow-soft">
           <div className="flex items-center justify-between mb-6">

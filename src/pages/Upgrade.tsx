@@ -1,15 +1,69 @@
-import React from 'react';
-import { Shield, Sparkles, Brain, Trophy, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Sparkles, Brain, Trophy, CheckCircle2, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
+
+const loadRazorpay = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const Upgrade: React.FC = () => {
   const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubscribe = () => {
-    // In a real app, this would be your Stripe Payment Link.
-    // We pass the user's UUID as the client_reference_id so the webhook knows who paid.
-    const stripeLink = `https://buy.stripe.com/test_123?client_reference_id=${user?.id}`;
-    window.location.href = stripeLink;
+  const handleSubscribe = async () => {
+    if (!user || !supabase) return;
+    setLoading(true);
+    try {
+      const isLoaded = await loadRazorpay();
+      if (!isLoaded) throw new Error("Razorpay SDK failed to load. Check your connection.");
+
+      const { data, error } = await supabase.functions.invoke('create-razorpay-subscription', {
+        body: {} // Plan ID will be read from backend ENV
+      });
+
+      if (error) throw error;
+      if (!data?.subscription_id) throw new Error("Could not create subscription ID");
+
+      const options = {
+        key: data.key_id,
+        subscription_id: data.subscription_id,
+        name: "NihonGO Premium",
+        description: "Unlimited Mastery and AI Tutors",
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        handler: function (_response: any) {
+          // Optimistically reload the window after success so the App catches the new subscription_status from DB
+          window.location.href = '/'; 
+        },
+        prefill: {
+          email: user.email,
+        },
+        theme: {
+          color: "#f59e0b" // amber-500
+        }
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const razorpay = new (window as any).Razorpay(options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      razorpay.on('payment.failed', function (response: any){
+         console.error('Payment Failed', response.error);
+      });
+      razorpay.open();
+      
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Error occurred starting checkout');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -104,12 +158,14 @@ const Upgrade: React.FC = () => {
 
           <button 
             onClick={handleSubscribe}
-            className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-lg hover:shadow-glow hover:scale-[1.02] transition-all"
+            disabled={loading}
+            className="flex items-center justify-center gap-2 w-full py-4 px-6 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold text-lg hover:shadow-glow hover:scale-[1.02] transition-all disabled:opacity-75 disabled:cursor-wait"
           >
-            Start Premium Trial
+            {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+            {loading ? 'Processing...' : 'Start Premium Trial'}
           </button>
           <p className="text-center text-xs text-muted mt-4">
-            Cancel anytime. Secure payment via Stripe.
+            Cancel anytime. Secure payment via Razorpay.
           </p>
         </div>
       </div>

@@ -12,7 +12,9 @@
   "dependencies": {
     "@sentry/react": "^10.47.0",
     "@supabase/supabase-js": "^2.49.1",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/dompurify": "^3.0.5",
+    "canvas-confetti": "^1.9.4",
     "dompurify": "^3.3.3",
     "framer-motion": "^12.38.0",
     "idb-keyval": "^6.2.2",

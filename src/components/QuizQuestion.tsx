@@ -12,7 +12,7 @@ const QuizQuestionComponent: React.FC<QuizQuestionProps> = ({ question, onAnswer
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  const { playPronunciation } = useAudio();
+  const { playPronunciation, playSuccessSound, playErrorSound } = useAudio();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleAnswer = (answer: string) => {
@@ -23,7 +23,10 @@ const QuizQuestionComponent: React.FC<QuizQuestionProps> = ({ question, onAnswer
     const correct = answer === question.correctAnswer;
     setIsCorrect(correct);
     
-    if (!correct) {
+    if (correct) {
+      playSuccessSound();
+    } else {
+      playErrorSound();
       timeoutRef.current = setTimeout(() => {
         onAnswer(false);
         resetState();

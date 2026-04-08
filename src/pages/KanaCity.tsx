@@ -4,11 +4,14 @@ import { HIRAGANA_DISTRICTS } from '../data/kanaDistricts';
 import { PaywallGuard } from '../components/PaywallGuard';
 import { Map, Lock, CheckCircle, PlayCircle, MessageSquare } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
+import Tooltip from '../components/Tooltip';
+import { getAllKana } from '../data/kanaData';
 
 const KanaCity: React.FC = () => {
   const { state } = useProgressStore();
   const [npcDialogue, setNpcDialogue] = useState<string | null>(null);
   const [loadingNpc, setLoadingNpc] = useState(false);
+  const allKana = getAllKana();
 
   // Evaluate active properties iteratively.
   // 1 is always unlocked.
@@ -134,16 +137,20 @@ const KanaCity: React.FC = () => {
                   {district.description}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {district.kanaGroup.map((kana) => (
-                    <span 
-                      key={kana} 
-                      className={`inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium ${
-                        isMastered ? 'bg-green-200 text-green-900' : isActive ? 'bg-blue-200 text-blue-900' : 'bg-border text-muted'
-                      }`}
-                    >
-                      {kana}
-                    </span>
-                  ))}
+                  {district.kanaGroup.map((kana) => {
+                    const charData = allKana.find(k => k.id === kana || k.character === kana);
+                    return (
+                      <Tooltip key={kana} content={charData?.romaji || kana} position="top">
+                        <span 
+                          className={`inline-flex items-center rounded-lg px-2.5 py-0.5 text-xs font-medium ${
+                            isMastered ? 'bg-green-200 text-green-900' : isActive ? 'bg-blue-200 text-blue-900' : 'bg-border text-muted hover:bg-paper2'
+                          }`}
+                        >
+                          {kana}
+                        </span>
+                      </Tooltip>
+                    );
+                  })}
                 </div>
                 {isLocked && (
                   <div className="absolute inset-0 flex items-center justify-center bg-paper/50 backdrop-blur-sm">

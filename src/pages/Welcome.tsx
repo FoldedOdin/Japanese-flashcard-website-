@@ -1,29 +1,36 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { CheckCircle2, ChevronRight, Trophy } from 'lucide-react';
-import posthog from 'posthog-js';
+import { fireConfetti } from '../utils/confetti';
 
 const Welcome: React.FC = () => {
   const [step, setStep] = useState(1);
   const [script, setScript] = useState<'hiragana' | 'katakana'>('hiragana');
-  const navigate = useNavigate();
+  const [proficient, setProficient] = useState<boolean | null>(null);
   const { user } = useAuth();
-
+  
   const handleNext = () => {
     setStep(prev => prev + 1);
   };
 
-  const finishOnboarding = async () => {
+  React.useEffect(() => {
+    if (step === 3) {
+      fireConfetti();
+    }
+  }, [step]);
+
+  const finishOnboarding = async (destination: string) => {
+    localStorage.setItem('onboarding_fallback', 'true');
     if (user && supabase) {
       await supabase
         .from('user_profiles')
         .update({ onboarding_completed: true })
         .eq('id', user.id);
     }
-    posthog.capture('onboarding_completed');
-    navigate('/upgrade');
+    
+    // Completely hard reload to force AuthContext to pick up the new database state
+    window.location.href = destination;
   };
 
   const currentProgress = (step / 4) * 100;
@@ -73,7 +80,10 @@ const Welcome: React.FC = () => {
                 {['sa', 'ka', 'ta', 'na'].map(opt => (
                   <button 
                     key={opt}
-                    onClick={handleNext}
+                    onClick={() => {
+                      setProficient(opt === 'ka');
+                      handleNext();
+                    }}
                     className="py-3 px-4 bg-surface border border-border rounded-lg hover:bg-primary-50 hover:text-primary-700 hover:border-primary-300 transition-colors font-medium"
                   >
                     {opt}
@@ -86,8 +96,14 @@ const Welcome: React.FC = () => {
 
         {step === 3 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-            <h1 className="text-3xl font-extrabold text-ink text-center">Your First Win</h1>
-            <p className="text-muted text-center">You're a natural! Let's lock in your first 5 characters.</p>
+            <h1 className="text-3xl font-extrabold text-ink text-center">
+              {proficient ? "You're a natural!" : "Good try!"}
+            </h1>
+            <p className="text-muted text-center">
+              {proficient 
+                ? "Let's lock in your first 5 characters." 
+                : "Don't worry, that's what we're here for. Let's learn your first 5 characters."}
+            </p>
             <div className="flex justify-center flex-wrap gap-3 my-8">
               {['a', 'i', 'u', 'e', 'o'].map(k => (
                 <div key={k} className="w-14 h-14 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xl font-bold shadow-sm">
@@ -124,13 +140,13 @@ const Welcome: React.FC = () => {
             </div>
 
             <button 
-              onClick={finishOnboarding}
+              onClick={() => finishOnboarding('/upgrade')}
               className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 hover:opacity-90 text-white rounded-xl font-bold text-lg shadow-glow transition-all hover:-translate-y-1"
             >
               Start My Premium Trial
             </button>
             <button 
-              onClick={() => navigate('/')}
+              onClick={() => finishOnboarding('/')}
               className="mt-4 text-sm text-muted hover:text-ink font-medium"
             >
               Continue to free version

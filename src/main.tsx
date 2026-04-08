@@ -6,14 +6,24 @@ import App from './App.tsx';
 import './index.css';
 
 // Initialize PostHog for Product Analytics
-posthog.init(import.meta.env.VITE_POSTHOG_KEY || 'phc_placeholder', {
-  api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://app.posthog.com',
-  loaded: (posthog) => {
-    if (import.meta.env.DEV) {
-      posthog.opt_out_capturing(); // Don't track locally by default
+const phKey = import.meta.env.VITE_POSTHOG_KEY;
+if (phKey && phKey !== 'phc_placeholder') {
+  posthog.init(phKey, {
+    api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
+    loaded: (posthog) => {
+      if (import.meta.env.DEV) {
+        posthog.opt_out_capturing(); // Don't track locally by default
+      }
     }
-  }
-});
+  });
+} else {
+  // Completely mock PostHog if the placeholder key is used to prevent 401s and 404s
+  posthog.init = () => undefined as any;
+  posthog.capture = () => undefined as any;
+  posthog.identify = () => undefined as any;
+  posthog.opt_out_capturing = () => undefined as any;
+  posthog.reset = () => undefined as any;
+}
 
 // Initialize Sentry for Deep Observability & Performance Tracing
 if (import.meta.env.VITE_ENABLE_SENTRY === 'true' || import.meta.env.PROD) {

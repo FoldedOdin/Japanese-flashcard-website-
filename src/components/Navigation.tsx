@@ -3,6 +3,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BookOpen, Brain, BarChart3, Trophy, Info, Mail, Sun, Moon, Menu, X, Settings, Home, LogIn, LogOut, Map, Sparkles } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../contexts/AuthContext';
+import { useProgressStore } from '../contexts/ProgressContext';
+import Tooltip from './Tooltip';
 
 const navItems = [
   { to: '/', label: 'Home', icon: Home },
@@ -22,6 +24,7 @@ const Navigation: React.FC = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { user, subscriptionStatus, signOut } = useAuth();
+  const { state } = useProgressStore();
   const [isOpen, setIsOpen] = useState(false);
 
   const resolvedTheme =
@@ -98,6 +101,15 @@ const Navigation: React.FC = () => {
           >
             {resolvedTheme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </button>
+
+          {user && (
+            <Tooltip content={`${state.gamification?.xp || 0} XP — Practice to Level Up!`} position="bottom">
+              <div className="hidden lg:flex flex-col items-end mx-2 cursor-help">
+                <span className="text-xs font-extrabold text-primary-600 tracking-wide">LVL {state.gamification?.level || 1}</span>
+                <span className="text-[10px] font-medium text-muted uppercase">{state.gamification?.xp || 0} XP</span>
+              </div>
+            </Tooltip>
+          )}
 
           {user && subscriptionStatus !== 'premium' && subscriptionStatus !== 'trial' && (
             <Link

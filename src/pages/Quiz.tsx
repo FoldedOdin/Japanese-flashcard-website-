@@ -6,6 +6,7 @@ import ProgressBar from '../components/ProgressBar';
 import { hiraganaData, katakanaData, getAllKana } from '../data/kanaData';
 import { KanaCharacter, QuestionType, QuizQuestion, StudySession } from '../types';
 import { useProgressStore } from '../hooks/useProgressStore';
+import { fireConfetti } from '../utils/confetti';
 
 const fisherYatesShuffle = <T,>(array: T[]): T[] => {
   const shuffled = [...array];
@@ -149,6 +150,15 @@ const Quiz: React.FC = () => {
   useEffect(() => {
     startQuiz();
   }, [mode, startQuiz]);
+
+  useEffect(() => {
+    if (isQuizComplete) {
+      const percentage = sessionTotal > 0 ? (sessionCorrect / sessionTotal) * 100 : 0;
+      if (percentage >= 80) {
+        fireConfetti();
+      }
+    }
+  }, [isQuizComplete, sessionCorrect, sessionTotal]);
 
   useEffect(() => {
     setIsAnswerLocked(false);

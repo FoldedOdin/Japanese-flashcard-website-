@@ -46,18 +46,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Fetch subscription status
         if (supabase) {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('user_profiles')
             .select('subscription_status, onboarding_completed')
             .eq('id', currentUser.id)
             .maybeSingle();
             
-          if (data) {
+          if (data && !error) {
             setSubscriptionStatus(data.subscription_status || 'free');
             setOnboardingCompleted(data.onboarding_completed || false);
           } else {
+            console.warn("Could not fetch profile (likely missing columns). Falling back to local storage.", error);
             setSubscriptionStatus('free');
-            setOnboardingCompleted(false);
+            setOnboardingCompleted(localStorage.getItem('onboarding_fallback') === 'true');
           }
         }
       } else {

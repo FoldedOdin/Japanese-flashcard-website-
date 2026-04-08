@@ -67,6 +67,23 @@ export interface PendingEvent {
   retryCount: number;
 }
 
+export interface GamificationProfile {
+  xp: number;
+  level: number;
+  streakShields: number;
+}
+
+export interface Mission {
+  id: string;
+  type: 'daily' | 'weekly';
+  description: string;
+  targetValue: number;
+  currentValue: number;
+  isCompleted: boolean;
+  xpReward: number;
+  expiresAt: string;
+}
+
 export interface ProgressState {
   totalSeen: number;
   totalCorrect: number;
@@ -79,6 +96,8 @@ export interface ProgressState {
   achievementUnlocks: Record<string, string>;
   kanaCity: Record<string, KanaCityDistrict>;
   settings: UserSettings;
+  gamification: GamificationProfile;
+  missions: Mission[];
   sync: SyncState;
   pendingEvents: PendingEvent[]; // Offline Queue
   updatedAt: string;
