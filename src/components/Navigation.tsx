@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { BookOpen, Brain, BarChart3, Trophy, Info, Mail, Sun, Moon, Menu, X, Settings, Home, LogIn, LogOut } from 'lucide-react';
+import { BookOpen, Brain, BarChart3, Trophy, Info, Mail, Sun, Moon, Menu, X, Settings, Home, LogIn, LogOut, Map, Sparkles } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -8,6 +8,8 @@ const navItems = [
   { to: '/', label: 'Home', icon: Home },
   { to: '/learn', label: 'Learn', icon: BookOpen },
   { to: '/quiz', label: 'Quiz', icon: Brain },
+  { to: '/kana-city', label: 'Kana City', icon: Map },
+  { to: '/ai-coach', label: 'AI Coach', icon: Sparkles },
   { to: '/statistics', label: 'Stats', icon: BarChart3 },
   { to: '/achievements', label: 'Achievements', icon: Trophy },
   { to: '/about', label: 'About', icon: Info },
@@ -19,7 +21,7 @@ const Navigation: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, subscriptionStatus, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const resolvedTheme =
@@ -97,6 +99,15 @@ const Navigation: React.FC = () => {
             {resolvedTheme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </button>
 
+          {user && subscriptionStatus !== 'premium' && subscriptionStatus !== 'trial' && (
+            <Link
+              to="/upgrade"
+              className="hidden lg:flex items-center space-x-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:scale-105"
+            >
+              <span>Go Premium</span>
+            </Link>
+          )}
+
           {user ? (
             <button
               onClick={() => {
@@ -151,7 +162,18 @@ const Navigation: React.FC = () => {
             })}
             <div className="pt-2 mt-2 border-t border-border">
               {user ? (
-                <button
+                <>
+                  {subscriptionStatus !== 'premium' && subscriptionStatus !== 'trial' && (
+                    <Link
+                      to="/upgrade"
+                      onClick={() => setIsOpen(false)}
+                      className="flex w-full items-center space-x-2 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-2 text-sm font-medium text-white hover:opacity-90 mb-2"
+                    >
+                      <Trophy className="h-4 w-4" />
+                      <span>Go Premium</span>
+                    </Link>
+                  )}
+                  <button
                   onClick={() => {
                     setIsOpen(false);
                     signOut();
@@ -162,6 +184,7 @@ const Navigation: React.FC = () => {
                   <LogOut className="h-4 w-4" />
                   <span>Sign Out</span>
                 </button>
+                </>
               ) : (
                 <Link
                   to="/login"

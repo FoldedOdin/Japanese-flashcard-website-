@@ -13,6 +13,10 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Settings from './pages/Settings';
 import Auth from './pages/Auth';
+import Welcome from './pages/Welcome';
+import Upgrade from './pages/Upgrade';
+import KanaCity from './pages/KanaCity';
+import AiCoach from './pages/AiCoach';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -34,13 +38,17 @@ const router = createBrowserRouter(
       children: [
         { index: true, element: <Home /> },
         { path: 'login', element: <Auth /> },
+        { path: 'welcome', element: <ProtectedRoute><Welcome /></ProtectedRoute> },
         { path: 'about', element: <About /> },
         { path: 'contact', element: <Contact /> },
         { path: 'learn', element: <ProtectedRoute><Learn /></ProtectedRoute> },
         { path: 'quiz', element: <ProtectedRoute><Quiz /></ProtectedRoute> },
         { path: 'statistics', element: <ProtectedRoute><Statistics /></ProtectedRoute> },
         { path: 'achievements', element: <ProtectedRoute><Achievements /></ProtectedRoute> },
+        { path: 'kana-city', element: <ProtectedRoute><KanaCity /></ProtectedRoute> },
+        { path: 'ai-coach', element: <ProtectedRoute><AiCoach /></ProtectedRoute> },
         { path: 'settings', element: <ProtectedRoute><Settings /></ProtectedRoute> },
+        { path: 'upgrade', element: <ProtectedRoute><Upgrade /></ProtectedRoute> },
       ],
     },
   ]

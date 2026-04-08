@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, onboardingCompleted } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -33,6 +33,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   if (!user) {
     // Redirect them to the login page, but save the current location they were trying to go to
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Redirect to welcome if onboarding is not completed, unless they are already there or on the upgrade page
+  if (user && !onboardingCompleted && location.pathname !== '/welcome' && location.pathname !== '/upgrade') {
+    return <Navigate to="/welcome" replace />;
   }
 
   return <>{children}</>;

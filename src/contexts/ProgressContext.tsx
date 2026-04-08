@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useState, useCallback } from 'react';
-import { CharacterProgress, ProgressState, StudySession, UserSettings } from '../types';
+import { CharacterProgress, ProgressState, StudySession, UserSettings, KanaCityDistrict } from '../types';
 import { applySrs, createCharacterProgress, isDueForReview } from '../utils/srs';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { get as idbGet, set as idbSet } from 'idb-keyval';
@@ -7,7 +7,7 @@ import { Analytics } from '../lib/analytics';
 
 interface ProgressContextValue {
   state: ProgressState;
-  recordAnswer: (characterId: string, gradeOrCorrect: boolean | number) => void;
+  recordAnswer: (characterId: string, gradeOrCorrect: boolean | number, confidence?: 'easy'|'medium'|'hard') => void;
   addSession: (session: StudySession) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
   resetProgress: () => void;
@@ -43,6 +43,7 @@ const defaultState: ProgressState = {
   characterProgress: {},
   studySessions: [],
   achievementUnlocks: {},
+  kanaCity: {},
   settings: defaultSettings,
   sync: {
     status: 'idle',
@@ -192,7 +193,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return nextState;
   };
 
-  const recordAnswer = useCallback((characterId: string, gradeOrCorrect: boolean | number) => {
+  const recordAnswer = useCallback((characterId: string, gradeOrCorrect: boolean | number, confidence?: 'easy'|'medium'|'hard') => {
     setState((prev) => {
       const now = new Date();
       
@@ -205,7 +206,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       sessionStorage.setItem('last_answer_time', now.getTime().toString());
 
       const existing = prev.characterProgress[characterId] ?? createCharacterProgress(characterId, now);
-      const updated = applySrs(existing, gradeOrCorrect, now);
+      const updated = applySrs(existing, gradeOrCorrect, confidence, now);
 
       const isCorrect = typeof gradeOrCorrect === 'boolean' ? gradeOrCorrect : gradeOrCorrect >= 3;
 
@@ -239,7 +240,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             version: 1,
             id: crypto.randomUUID(),
             type: 'ANSWER_SUBMITTED' as const,
-            payload: { characterId, gradeOrCorrect, timestamp: now.toISOString() },
+            payload: { characterId, gradeOrCorrect, confidence, timestamp: now.toISOString() },
             createdAt: now.getTime(),
             retryCount: 0
         }].slice(-1000), // Enforce unbounded limit
@@ -426,13 +427,14 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
          }
       }
 
-      const [remoteProgress, remoteCharacters, remoteSessions, remoteSettings, remoteAchievements] =
+      const [remoteProgress, remoteCharacters, remoteSessions, remoteSettings, remoteAchievements, remoteDistricts] =
         await Promise.all([
           supabase.from('user_progress').select('*').eq('user_id', userId).maybeSingle(),
           supabase.from('character_progress').select('*').eq('user_id', userId),
           supabase.from('study_sessions').select('*').eq('user_id', userId),
           supabase.from('user_settings').select('*').eq('user_id', userId).maybeSingle(),
           supabase.from('achievement_unlocks').select('*').eq('user_id', userId),
+          supabase.from('kana_city_districts').select('*').eq('user_id', userId),
         ]);
 
       const remoteCharacterProgress: Record<string, CharacterProgress> = {};
@@ -468,6 +470,16 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         remoteAchievementsData[row.achievement_id] = row.unlocked_at;
       });
 
+      const remoteCityData: Record<string, KanaCityDistrict> = {};
+      (remoteDistricts.data || []).forEach((row) => {
+        remoteCityData[row.district_id] = {
+          districtId: row.district_id,
+          status: row.status,
+          unlockedAt: row.unlocked_at,
+          masteredAt: row.mastered_at,
+        };
+      });
+
       const remoteState: ProgressState = {
         ...defaultState,
         totalSeen: remoteProgress.data?.total_seen ?? 0,
@@ -479,6 +491,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         characterProgress: remoteCharacterProgress,
         studySessions: remoteSessionsData,
         achievementUnlocks: remoteAchievementsData,
+        kanaCity: remoteCityData,
         settings: {
           ...defaultSettings,
           ...(remoteSettings.data
@@ -515,6 +528,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         characterProgress: mergedCharacterProgress,
         studySessions: mergedSessions,
         achievementUnlocks: { ...remoteState.achievementUnlocks, ...state.achievementUnlocks },
+        kanaCity: { ...remoteState.kanaCity, ...state.kanaCity },
         totalSeen: totals.totalSeen,
         totalCorrect: totals.totalCorrect,
         score: totals.score,
@@ -605,6 +619,20 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (achievementRows.length > 0) {
         await supabase.from('achievement_unlocks').upsert(achievementRows, {
           onConflict: 'user_id,achievement_id',
+        });
+      }
+
+      const districtRows = Object.values(mergedState.kanaCity).map((dist) => ({
+        user_id: userId,
+        district_id: dist.districtId,
+        status: dist.status,
+        unlocked_at: dist.unlockedAt,
+        mastered_at: dist.masteredAt,
+        updated_at: now,
+      }));
+      if (districtRows.length > 0) {
+        await supabase.from('kana_city_districts').upsert(districtRows, {
+           onConflict: 'user_id,district_id',
         });
       }
 

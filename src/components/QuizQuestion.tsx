@@ -5,12 +5,13 @@ import { useAudio } from '../hooks/useAudio';
 
 interface QuizQuestionProps {
   question: QuizQuestion;
-  onAnswer: (correct: boolean) => void;
+  onAnswer: (correct: boolean, confidence?: 'easy' | 'medium' | 'hard') => void;
 }
 
 const QuizQuestionComponent: React.FC<QuizQuestionProps> = ({ question, onAnswer }) => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
   const { playPronunciation } = useAudio();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -20,12 +21,26 @@ const QuizQuestionComponent: React.FC<QuizQuestionProps> = ({ question, onAnswer
     setSelectedAnswer(answer);
     setShowResult(true);
     const correct = answer === question.correctAnswer;
+    setIsCorrect(correct);
     
-    timeoutRef.current = setTimeout(() => {
-      onAnswer(correct);
-      setSelectedAnswer(null);
-      setShowResult(false);
-    }, 1500);
+    if (!correct) {
+      timeoutRef.current = setTimeout(() => {
+        onAnswer(false);
+        resetState();
+      }, 1500);
+    }
+  };
+
+  const handleConfidence = (confidence: 'easy' | 'medium' | 'hard') => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    onAnswer(true, confidence);
+    resetState();
+  };
+
+  const resetState = () => {
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setIsCorrect(false);
   };
 
   const handlePlayAudio = () => {
@@ -75,14 +90,14 @@ const QuizQuestionComponent: React.FC<QuizQuestionProps> = ({ question, onAnswer
       <div className="grid grid-cols-2 gap-4">
         {question.options.map((option, index) => {
           const isSelected = selectedAnswer === option;
-          const isCorrect = option === question.correctAnswer;
+          const isCorrectOption = option === question.correctAnswer;
           
           let buttonClass = "quiz-option p-4 rounded-2xl border-2 font-semibold text-lg ";
           
           if (showResult) {
-            if (isCorrect) {
+            if (isCorrectOption) {
               buttonClass += "bg-emerald-500 border-emerald-400 text-white";
-            } else if (isSelected && !isCorrect) {
+            } else if (isSelected && !isCorrectOption) {
               buttonClass += "bg-rose-500 border-rose-400 text-white";
             } else {
               buttonClass += "bg-paper2 border-border text-muted";
@@ -102,8 +117,8 @@ const QuizQuestionComponent: React.FC<QuizQuestionProps> = ({ question, onAnswer
                 <span className={question.questionType !== 'kana_to_romaji' ? 'font-japanese text-2xl' : ''}>
                   {option}
                 </span>
-                {showResult && isCorrect && <Check className="h-5 w-5" />}
-                {showResult && isSelected && !isCorrect && <X className="h-5 w-5" />}
+                {showResult && isCorrectOption && <Check className="h-5 w-5" />}
+                {showResult && isSelected && !isCorrectOption && <X className="h-5 w-5" />}
               </div>
             </button>
           );
@@ -111,12 +126,26 @@ const QuizQuestionComponent: React.FC<QuizQuestionProps> = ({ question, onAnswer
       </div>
 
       {showResult && (
-        <div className="text-center mt-6" role="status" aria-live="polite">
-          <div className={`text-lg font-semibold ${
-            selectedAnswer === question.correctAnswer ? 'text-emerald-600' : 'text-rose-600'
+        <div className="text-center mt-6 animate-in fade-in" role="status" aria-live="polite">
+          <div className={`text-lg font-semibold mb-4 ${
+            isCorrect ? 'text-emerald-600' : 'text-rose-600'
           }`}>
-            {selectedAnswer === question.correctAnswer ? '正解！ (Correct!)' : '間違い (Try again!)'}
+            {isCorrect ? '正解！ (Correct!)' : '間違い (Try again!)'}
           </div>
+          
+          {isCorrect && (
+            <div className="flex justify-center gap-3 animate-in slide-in-from-bottom-2">
+              <button onClick={() => handleConfidence('easy')} className="px-6 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-full font-medium transition-colors border border-emerald-300 shadow-sm">
+                Easy
+              </button>
+              <button onClick={() => handleConfidence('medium')} className="px-6 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-full font-medium transition-colors border border-blue-300 shadow-sm">
+                Medium
+              </button>
+              <button onClick={() => handleConfidence('hard')} className="px-6 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 rounded-full font-medium transition-colors border border-amber-300 shadow-sm">
+                Hard
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

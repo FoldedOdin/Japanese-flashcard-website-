@@ -117,12 +117,12 @@ const Quiz: React.FC = () => {
     addSession(session);
   }, [sessionTotal, sessionCorrect, sessionStart, addSession]);
 
-  const handleAnswer = useCallback((correct: boolean) => {
+  const handleAnswer = useCallback((correct: boolean, confidence?: 'easy' | 'medium' | 'hard') => {
     const currentQuestion = questions[currentQuestionIndex];
     if (!currentQuestion) return;
     setIsAnswerLocked(true);
 
-    recordAnswer(currentQuestion.character.id, correct);
+    recordAnswer(currentQuestion.character.id, correct, confidence);
     const nextTotal = sessionTotal + 1;
     const nextCorrect = correct ? sessionCorrect + 1 : sessionCorrect;
     const nextScore = correct ? sessionScore + 10 : sessionScore;

@@ -24,6 +24,13 @@ export interface CharacterProgress {
   updatedAt: string;
 }
 
+export interface KanaCityDistrict {
+  districtId: string;
+  status: 'locked' | 'active' | 'mastered';
+  unlockedAt: string | null;
+  masteredAt: string | null;
+}
+
 export interface StudySession {
   id: string;
   mode: 'flashcard' | 'quiz' | 'review' | 'writing' | 'listening';
@@ -70,6 +77,7 @@ export interface ProgressState {
   characterProgress: Record<string, CharacterProgress>;
   studySessions: StudySession[];
   achievementUnlocks: Record<string, string>;
+  kanaCity: Record<string, KanaCityDistrict>;
   settings: UserSettings;
   sync: SyncState;
   pendingEvents: PendingEvent[]; // Offline Queue

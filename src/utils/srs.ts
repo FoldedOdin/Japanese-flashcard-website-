@@ -20,6 +20,7 @@ export const createCharacterProgress = (characterId: string, now = new Date()): 
 export const applySrs = (
   current: CharacterProgress,
   gradeOrCorrect: boolean | number,
+  confidence?: 'easy' | 'medium' | 'hard',
   now = new Date()
 ): CharacterProgress => {
   let grade: number;
@@ -27,7 +28,13 @@ export const applySrs = (
 
   if (typeof gradeOrCorrect === 'boolean') {
     isCorrect = gradeOrCorrect;
-    grade = isCorrect ? 4 : 2;
+    if (isCorrect) {
+      if (confidence === 'easy') grade = 5;
+      else if (confidence === 'hard') grade = 3;
+      else grade = 4; // medium
+    } else {
+      grade = 2; // incorrect
+    }
   } else {
     grade = gradeOrCorrect;
     isCorrect = grade >= 3;
