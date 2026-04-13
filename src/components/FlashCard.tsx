@@ -7,8 +7,6 @@ interface FlashCardProps {
   character: KanaCharacter;
   showRomaji?: boolean;
   onFlip?: () => void;
-  onNext?: () => void;
-  onPrevious?: () => void;
   onAnswer?: (grade: number) => void;
 }
 
@@ -16,8 +14,6 @@ const FlashCard: React.FC<FlashCardProps> = ({
   character, 
   showRomaji = false,
   onFlip,
-  onNext,
-  onPrevious,
   onAnswer
 }) => {
   const [isFlipped, setIsFlipped] = useState(showRomaji);
@@ -39,36 +35,18 @@ const FlashCard: React.FC<FlashCardProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Only handle Enter/Space if they aren't being handled by global listeners
+    // Clicks are already handled by handleFlip
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleFlip();
-    } else if (e.key === 'ArrowRight' && onNext) {
-      e.preventDefault();
-      onNext();
-    } else if (e.key === 'ArrowLeft' && onPrevious) {
-      e.preventDefault();
-      onPrevious();
-    } else if (isFlipped && onAnswer) {
-      if (e.key === '1') {
-        e.preventDefault();
-        e.stopPropagation();
-        onAnswer(3);
-      } else if (e.key === '2') {
-        e.preventDefault();
-        e.stopPropagation();
-        onAnswer(4);
-      } else if (e.key === '3') {
-        e.preventDefault();
-        e.stopPropagation();
-        onAnswer(5);
-      }
     }
   };
 
   return (
-    <div className="relative w-80 h-80 perspective-1000">
+    <div className="relative w-80 h-80 perspective-1000 group">
       <div 
-        className={`flashcard relative w-full h-full transform-style-preserve-3d cursor-pointer transition-transform duration-300 hover:scale-[1.02] ${
+        className={`flashcard relative w-full h-full transform-style-preserve-3d cursor-pointer transition-transform duration-500 hover:scale-[1.02] ${
           isFlipped ? 'rotate-y-180' : ''
         }`}
         onClick={handleFlip}
@@ -79,7 +57,10 @@ const FlashCard: React.FC<FlashCardProps> = ({
         aria-label={`Flash card showing ${character.character}. ${isFlipped ? 'Showing pronunciation' : 'Press to reveal pronunciation'}`}
       >
         {/* Front of card - Character */}
-        <div className="absolute inset-0 w-full h-full backface-hidden">
+        <div 
+          className={`absolute inset-0 w-full h-full backface-hidden z-20 ${isFlipped ? 'pointer-events-none' : ''}`}
+          style={{ transform: 'rotateY(0deg)' }}
+        >
           <div className="w-full h-full rounded-3xl border border-border bg-surface shadow-paper flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-paper-texture opacity-60" />
             
@@ -108,22 +89,25 @@ const FlashCard: React.FC<FlashCardProps> = ({
               <Volume2 className="h-5 w-5" />
             </button>
             
-            <div className="absolute bottom-6 left-6 text-muted" aria-hidden="true">
+            <div className="absolute bottom-6 left-6 text-muted font-bold opacity-30 select-none" aria-hidden="true">
               <RotateCcw className="h-5 w-5" />
             </div>
           </div>
         </div>
 
         {/* Back of card - Romaji */}
-        <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180">
+        <div 
+          className={`absolute inset-0 w-full h-full backface-hidden rotate-y-180 z-10 ${isFlipped ? 'z-30' : ''}`}
+          style={{ transform: 'rotateY(180deg)' }}
+        >
           <div className="w-full h-full rounded-3xl border border-border bg-paper2 shadow-paper flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-paper-texture opacity-60" />
             
-            <div className="text-6xl font-bold text-ink mb-4 relative z-10" aria-live="polite">
+            <div className="text-6xl font-bold text-ink mb-2 relative z-10" aria-live="polite">
               {character.romaji}
             </div>
             
-            <div className="text-lg text-muted mb-2 flex items-center justify-center gap-2">
+            <div className="text-lg text-muted mb-4 flex items-center justify-center gap-2">
               Pronunciation
               <button
                 onClick={(e) => { e.stopPropagation(); handlePlayAudio(e); }}
@@ -135,26 +119,26 @@ const FlashCard: React.FC<FlashCardProps> = ({
             </div>
             
             {onAnswer ? (
-              <div className="flex flex-col items-center gap-3 mt-4 w-full px-6" onClick={e => e.stopPropagation()}>
-                <div className="text-xs text-muted uppercase tracking-wider font-semibold">How well did you know this?</div>
+              <div className="flex flex-col items-center gap-3 mt-2 w-full px-6" onClick={e => e.stopPropagation()}>
+                <div className="text-[10px] text-muted uppercase tracking-widest font-bold mb-1">How well did you know it?</div>
                 <div className="flex justify-center gap-2 w-full">
                   <button
                     onClick={(e) => { e.stopPropagation(); onAnswer(3); }}
-                    className="flex-1 py-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl font-bold transition-all border border-red-500/20 text-sm hover:scale-105 active:scale-95"
+                    className="flex-1 py-3 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl font-bold transition-all border border-red-500/20 text-xs hover:scale-105 active:scale-95"
                   >
-                    Hard <span className="opacity-60 ml-1 px-1 rounded bg-black/10 font-mono text-[10px]">1</span>
+                    Hard <span className="opacity-60 ml-0.5 px-1 rounded bg-black/10 font-mono text-[9px]">1</span>
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); onAnswer(4); }}
-                    className="flex-1 py-3 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white rounded-xl font-bold transition-all border border-amber-500/20 text-sm hover:scale-105 active:scale-95"
+                    className="flex-1 py-3 bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white rounded-xl font-bold transition-all border border-amber-500/20 text-xs hover:scale-105 active:scale-95"
                   >
-                    Good <span className="opacity-60 ml-1 px-1 rounded bg-black/10 font-mono text-[10px]">2</span>
+                    Good <span className="opacity-60 ml-0.5 px-1 rounded bg-black/10 font-mono text-[9px]">2</span>
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); onAnswer(5); }}
-                    className="flex-1 py-3 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl font-bold transition-all border border-emerald-500/20 text-sm hover:scale-105 active:scale-95"
+                    className="flex-1 py-3 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl font-bold transition-all border border-emerald-500/20 text-xs hover:scale-105 active:scale-95"
                   >
-                    Easy <span className="opacity-60 ml-1 px-1 rounded bg-black/10 font-mono text-[10px]">3</span>
+                    Easy <span className="opacity-60 ml-0.5 px-1 rounded bg-black/10 font-mono text-[9px]">3</span>
                   </button>
                 </div>
               </div>
@@ -175,7 +159,7 @@ const FlashCard: React.FC<FlashCardProps> = ({
               </button>
             )}
             
-            <div className="absolute bottom-6 left-6 text-muted" aria-hidden="true">
+            <div className="absolute bottom-6 left-6 text-muted opacity-30" aria-hidden="true">
               <RotateCcw className="h-5 w-5" />
             </div>
           </div>

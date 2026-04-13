@@ -117,6 +117,11 @@ const Learn: React.FC = () => {
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      // Don't handle keys if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       if (tab === 'learn') {
         switch (e.key) {
           case 'ArrowLeft':
@@ -126,14 +131,27 @@ const Learn: React.FC = () => {
             goToNext();
             break;
           case ' ':
+          case 'Enter':
             e.preventDefault();
             handleFlip();
             break;
         }
       } else if (tab === 'review' && sessionQueue && sessionQueue.length > 0 && !sessionCompleted) {
-        if (e.key === ' ') {
+        if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
           setReviewFlipped(!reviewFlipped);
+        } else if (reviewFlipped) {
+          // Grading keys only work when card is flipped
+          if (e.key === '1') {
+            e.preventDefault();
+            handleSessionAnswer(3);
+          } else if (e.key === '2') {
+            e.preventDefault();
+            handleSessionAnswer(4);
+          } else if (e.key === '3') {
+            e.preventDefault();
+            handleSessionAnswer(5);
+          }
         }
       }
     };
