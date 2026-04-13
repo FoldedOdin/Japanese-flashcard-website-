@@ -26,7 +26,7 @@ const Navigation: React.FC<NavigationProps> = ({ onMenuClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const { user, subscriptionStatus, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const resolvedTheme =
@@ -144,14 +144,6 @@ const Navigation: React.FC<NavigationProps> = ({ onMenuClick }) => {
 
           {user && (
             <>
-              {subscriptionStatus !== 'premium' && subscriptionStatus !== 'trial' && (
-                <Link
-                  to="/upgrade"
-                  className="hidden md:flex items-center space-x-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:scale-105"
-                >
-                  <span>Go Premium</span>
-                </Link>
-              )}
               <button
                 onClick={() => {
                   signOut();

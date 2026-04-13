@@ -11,8 +11,8 @@
   <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
   <img src="https://img.shields.io/badge/TailwindCSS-3-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
-  <img src="https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge" />
+  <a href="https://github.com/sponsors/arc-en-fel"><img src="https://img.shields.io/badge/Sponsor-💖-pink?style=for-the-badge&logo=github" /></a>
 </p>
 
 <p align="center">
@@ -30,22 +30,26 @@
 ## ✨ Features
 
 ### 🃏 Learning Modes
-| Mode | Description |
-|------|-------------|
-| **Flashcards** | Flip cards with smooth 3D animations to reveal pronunciations |
-| **Quiz Mode** | Multiple-choice questions with instant feedback and scoring |
-| **Hiragana Only** | Focus exclusively on Hiragana characters |
-| **Katakana Only** | Focus exclusively on Katakana characters |
-| **Mixed Mode** | Challenge yourself with both scripts at once |
+
+| Mode              | Description                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| **Flashcards**    | Flip cards with smooth 3D animations to reveal pronunciations |
+| **Quiz Mode**     | Multiple-choice questions with instant feedback and scoring   |
+| **Hiragana Only** | Focus exclusively on Hiragana characters                      |
+| **Katakana Only** | Focus exclusively on Katakana characters                      |
+| **Mixed Mode**    | Challenge yourself with both scripts at once                  |
 
 ### ♿ Accessibility First
+
 NihongoFlash is built with accessibility as a core requirement, not an afterthought:
+
 - **Full Keyboard Navigation** — Tab, Enter, Space, and Arrow keys work throughout
 - **Screen Reader Support** — ARIA labels, live regions, and semantic HTML
 - **Reduced Motion** — Respects `prefers-reduced-motion` user preference
 - **WCAG Compliant** — Color contrast and focus indicators meet accessibility standards
 
 ### 🎯 Other Highlights
+
 - 🔊 **Audio Pronunciation** via Web Speech API for authentic listening practice
 - 📊 **Progress Tracking** with detailed learning statistics saved to Local Storage
 - 🌙 **Dark Theme** optimized for extended study sessions
@@ -58,6 +62,7 @@ NihongoFlash is built with accessibility as a core requirement, not an afterthou
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js** v16 or higher
 - **npm** or **yarn**
 
@@ -90,12 +95,14 @@ npm run preview   # Preview the production build locally
 ## 🎮 Usage
 
 ### Flashcard Mode
+
 1. Go to the **Learn** section and select your script mode
 2. Press **Enter** or **Space** (or click) to flip a card
 3. Use **← →** Arrow Keys to move between cards
 4. Click the 🔊 audio button to hear the pronunciation
 
 ### Quiz Mode
+
 1. Go to the **Quiz** section and select your mode
 2. Pick the correct romaji for each character shown
 3. Get instant ✅ / ❌ feedback after each answer
@@ -103,12 +110,12 @@ npm run preview   # Preview the production build locally
 
 ### ⌨️ Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Tab` | Navigate between elements |
+| Key               | Action                       |
+| ----------------- | ---------------------------- |
+| `Tab`             | Navigate between elements    |
 | `Enter` / `Space` | Flip card or activate button |
-| `← →` Arrow Keys | Navigate between flashcards |
-| `Escape` | Close modal / go back |
+| `← →` Arrow Keys  | Navigate between flashcards  |
+| `Escape`          | Close modal / go back        |
 
 ---
 
@@ -117,19 +124,19 @@ npm run preview   # Preview the production build locally
 <details>
 <summary><strong>Hiragana — 46 characters</strong> (click to expand)</summary>
 
-| Group | Characters |
-|-------|-----------|
+| Group  | Characters     |
+| ------ | -------------- |
 | Vowels | あ い う え お |
-| K | か き く け こ |
-| S | さ し す せ そ |
-| T | た ち つ て と |
-| N | な に ぬ ね の |
-| H | は ひ ふ へ ほ |
-| M | ま み む め も |
-| Y | や ゆ よ |
-| R | ら り る れ ろ |
-| W | わ を |
-| N | ん |
+| K      | か き く け こ |
+| S      | さ し す せ そ |
+| T      | た ち つ て と |
+| N      | な に ぬ ね の |
+| H      | は ひ ふ へ ほ |
+| M      | ま み む め も |
+| Y      | や ゆ よ       |
+| R      | ら り る れ ろ |
+| W      | わ を          |
+| N      | ん             |
 
 </details>
 
@@ -223,7 +230,7 @@ Please open an issue first for major changes so we can discuss what you'd like t
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is 100% free and open source, available under the [AGPL-3.0 License](LICENSE).
 
 ---
 
@@ -239,7 +246,7 @@ Have a suggestion, found a bug, or just want to say hi?
 <div align="center">
 
 **Happy Learning! 頑張ってください！**
-*(Ganbatte kudasai — Do your best!)*
+_(Ganbatte kudasai — Do your best!)_
 
 ⭐ If this project helped you, consider giving it a star!
 

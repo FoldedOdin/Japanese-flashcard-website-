@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useProgressStore } from '../contexts/ProgressContext';
 import { HIRAGANA_DISTRICTS } from '../data/kanaDistricts';
-import { PaywallGuard } from '../components/PaywallGuard';
 import { Map, Lock, CheckCircle, PlayCircle, MessageSquare } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import Tooltip from '../components/Tooltip';
@@ -70,7 +69,7 @@ const KanaCity: React.FC = () => {
   };
 
   return (
-    <PaywallGuard featureName="Kana City">
+    <>
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -165,7 +164,7 @@ const KanaCity: React.FC = () => {
           })}
         </div>
       </div>
-    </PaywallGuard>
+    </>
   );
 };
 

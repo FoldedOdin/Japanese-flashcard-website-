@@ -1,25 +1,50 @@
-# Contributing to NihonGO
+# Contributing to NihongoFlash
 
-Thank you for your interest in contributing to NihonGO. As a production-focused commercial project, we maintain strict quality standards and legal requirements for all contributions.
+Thank you for your interest in contributing to NihongoFlash! We are a 100% free and open-source project committed to making Japanese learning accessible, engaging, and scientifically effective.
 
-## Intellectual Property & Contributor License Agreement (CLA)
+## Local Setup
 
-By contributing to this repository, you agree to transfer all rights, title, and interest in and to your contributions to the project owners. You acknowledge that your contributions may be used in commercial, subscription-based products.
+Getting started is simple. Our backend is powered by Supabase, and the frontend is a standard Vite + React application.
 
-## Development Workflow
+1. **Clone the repository:**
 
-1.  **Branch Strategy**: Permanent branches are `main` (production) and `develop` (staging). Features should be built on `feat/` or `fix/` branches.
-2.  **Linting**: Ensure all code passes `npm run lint` with zero errors or warnings.
-3.  **Tests**: New features must include comprehensive unit tests using Vitest.
-4.  **Resilience**: Follow the established distributed architecture patterns (idempotency, offline-first, backpressure).
+   ```bash
+   git clone https://github.com/arc-en-fel/Japanese-flashcard-website-.git
+   cd Japanese-flashcard-website-
+   ```
 
-## Pull Request Guidelines
+2. **Install dependencies:**
 
-- **Atomic Commits**: Keep commits focused and logically grouped.
-- **Documentation**: Update relevant markdown files and inline comments if logic changes.
-- **Review**: All PRs require at least one approval from a lead maintainer.
-- **CI**: Checks must be green before merging.
+   ```bash
+   npm install
+   ```
 
-## Reporting Issues
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
 
-Please use the provided issue templates for bug reports or feature requests. For security vulnerabilities, please refer to the [Security Policy](SECURITY.md).
+If you plan to work on backend features, you can spin up a local Supabase instance using Docker:
+
+```bash
+supabase start
+```
+
+## Branching & Commit Strategy
+
+1. **Branch Naming**: Please prefix your branches logically:
+   - `feat/story-mode`
+   - `fix/kana-city-unlock`
+   - `chore/dependency-updates`
+2. **Conventional Commits**: We use conventional commits. e.g., `feat: add new mnemonic generator`.
+3. **Pull Requests**:
+   - Please ensure your PR encompasses a single logical change.
+   - Describe what problem it solves and attach screenshots if it includes UI changes.
+
+## Areas We Need Help With
+
+- **Good First Issues**: Check our issue tracker for `good first issue` and `help wanted` tags. This usually involves small UI fixes, accessibility improvements, or adding new Kana groupings.
+- **Story Manga & Lore**: We want to add community-driven stories to our Story Mode!
+- **Local AI (BYOK)**: Assisting with WebGPU, Ollama, or BYOK (Bring Your Own Key) architecture.
+
+Thank you for helping us democratize language learning!

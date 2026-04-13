@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { useProgressStore } from '../contexts/ProgressContext';
-import { PaywallGuard } from '../components/PaywallGuard';
 import { Sparkles, BrainCircuit, Target, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { getAllKana } from '../data/kanaData';
@@ -67,7 +66,7 @@ const AiCoach: React.FC = () => {
   };
 
   return (
-    <PaywallGuard featureName="AI Coach">
+    <>
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 text-center">
           <h1 className="flex items-center justify-center text-4xl font-extrabold text-ink">
@@ -157,7 +156,7 @@ const AiCoach: React.FC = () => {
 
         </div>
       </div>
-    </PaywallGuard>
+    </>
   );
 };
 

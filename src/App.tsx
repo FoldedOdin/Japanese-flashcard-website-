@@ -14,7 +14,6 @@ import Contact from './pages/Contact';
 import Settings from './pages/Settings';
 import Auth from './pages/Auth';
 import Welcome from './pages/Welcome';
-import Upgrade from './pages/Upgrade';
 import KanaCity from './pages/KanaCity';
 import AiCoach from './pages/AiCoach';
 import { AuthProvider } from './contexts/AuthContext';
@@ -82,7 +81,6 @@ const router = createBrowserRouter(
         { path: 'kana-city', element: <ProtectedRoute><KanaCity /></ProtectedRoute> },
         { path: 'ai-coach', element: <ProtectedRoute><AiCoach /></ProtectedRoute> },
         { path: 'settings', element: <ProtectedRoute><Settings /></ProtectedRoute> },
-        { path: 'upgrade', element: <ProtectedRoute><Upgrade /></ProtectedRoute> },
       ],
     },
   ]
