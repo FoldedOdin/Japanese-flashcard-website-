@@ -54,15 +54,20 @@ const KanaCity: React.FC = () => {
         .map((c) => c.characterId)
         .join(', ');
 
+      const apiKey = localStorage.getItem('byok_groq_api_key');
       const { data, error } = await supabase.functions.invoke('kana-npc', {
-        body: { weakCharacters: weakest || 'none yet' },
+        body: { weakCharacters: weakest || 'none yet', apiKey },
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.context?.status === 401) throw new Error("Please add your Groq API Key in Settings.");
+        throw error;
+      }
       setNpcDialogue(data.dialogue);
     } catch (err) {
       console.error(err);
-      setNpcDialogue("The spirits of the city are quiet right now...");
+      const errorMessage = err instanceof Error ? err.message : "The spirits of the city are quiet right now...";
+      setNpcDialogue(errorMessage);
     } finally {
       setLoadingNpc(false);
     }

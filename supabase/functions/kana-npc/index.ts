@@ -9,15 +9,19 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  if (!GROQ_API_KEY) {
-    return new Response(JSON.stringify({ error: 'GROQ_API_KEY not set' }), { 
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
-  }
+  // We evaluate the API key from the request body first
 
   try {
-    const { weakCharacters } = await req.json()
+    const { weakCharacters, apiKey } = await req.json()
+    
+    const resolvedApiKey = apiKey || GROQ_API_KEY;
+    if (!resolvedApiKey) {
+      return new Response(JSON.stringify({ error: 'No API Key provided. Please add your Groq API key in Settings.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+    }
+
     
     const prompt = `You are a wise and slightly eccentric local resident of Kana City, a spatial memory palace for learning Japanese Hiragana. 
 The traveler standing before you is currently struggling with these characters: ${weakCharacters}. 
@@ -27,7 +31,7 @@ Do not break character. Do not say "Here is a memory story". Just speak directly
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Authorization': `Bearer ${resolvedApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

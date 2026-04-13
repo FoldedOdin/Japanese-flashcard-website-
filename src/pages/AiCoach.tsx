@@ -33,14 +33,19 @@ const AiCoach: React.FC = () => {
     try {
       const kanaObj = allKana.find(k => k.id === mnemonicChar);
       const charStr = kanaObj ? `${kanaObj.character} (${kanaObj.romaji})` : mnemonicChar;
+      const apiKey = localStorage.getItem('byok_groq_api_key');
       const { data, error } = await supabase.functions.invoke('ai-coach', {
-        body: { action: 'mnemonic', character: charStr },
+        body: { action: 'mnemonic', character: charStr, apiKey },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.context?.status === 401) throw new Error("Please add your Groq API Key in Settings.");
+        throw error;
+      }
       setMnemonicResult(data.result);
     } catch (err) {
       console.error(err);
-      setMnemonicResult("Sensei's mind is clouded right now. Try again later.");
+      const errorMessage = err instanceof Error ? err.message : "Sensei's mind is clouded right now. Try again later.";
+      setMnemonicResult(errorMessage);
     } finally {
       setLoadingMnemonic(false);
     }
@@ -52,14 +57,19 @@ const AiCoach: React.FC = () => {
     setWeaknessSummary(null);
     try {
       const weakStr = weakestChars.join(', ') || 'none';
+      const apiKey = localStorage.getItem('byok_groq_api_key');
       const { data, error } = await supabase.functions.invoke('ai-coach', {
-        body: { action: 'weakness', weakCharacters: weakStr },
+        body: { action: 'weakness', weakCharacters: weakStr, apiKey },
       });
-      if (error) throw error;
+      if (error) {
+        if (error.context?.status === 401) throw new Error("Please add your Groq API Key in Settings.");
+        throw error;
+      }
       setWeaknessSummary(data.result);
     } catch (err) {
       console.error(err);
-      setWeaknessSummary("Could not analyze your weaknesses at this time.");
+      const errorMessage = err instanceof Error ? err.message : "Could not analyze your weaknesses at this time.";
+      setWeaknessSummary(errorMessage);
     } finally {
       setLoadingSummary(false);
     }

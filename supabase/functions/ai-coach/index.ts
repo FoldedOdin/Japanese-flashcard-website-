@@ -8,15 +8,18 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  if (!GROQ_API_KEY) {
-    return new Response(JSON.stringify({ error: 'GROQ_API_KEY not set' }), { 
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    })
-  }
+  // We will check for the key dynamically inside the request handler
 
   try {
-    const { action, character, weakCharacters } = await req.json()
+    const { action, character, weakCharacters, apiKey } = await req.json()
+    
+    const resolvedApiKey = apiKey || GROQ_API_KEY;
+    if (!resolvedApiKey) {
+      return new Response(JSON.stringify({ error: 'No API Key provided. Please add your Groq API key in Settings.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+    }
     
     let prompt = '';
 
@@ -36,7 +39,7 @@ Give them a 2-sentence encouraging summary of their struggle pattern and one tip
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Authorization': `Bearer ${resolvedApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

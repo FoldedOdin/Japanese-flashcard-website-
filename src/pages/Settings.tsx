@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Cloud, Download, Upload, User, ShieldCheck, RefreshCcw } from 'lucide-react';
+import { Cloud, Download, Upload, User, ShieldCheck, RefreshCcw, Key } from 'lucide-react';
 import { useProgressStore } from '../hooks/useProgressStore';
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 import { useTheme } from '../hooks/useTheme';
@@ -14,7 +14,8 @@ const Settings: React.FC = () => {
   const [password, setPassword] = useState('');
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const [importPayload, setImportPayload] = useState('');
-
+  const [groqKey, setGroqKey] = useState(() => localStorage.getItem('byok_groq_api_key') || '');
+  
   const exportPayload = useMemo(() => exportProgress(), [exportProgress]);
 
   useEffect(() => {
@@ -279,6 +280,29 @@ const Settings: React.FC = () => {
             <div className="flex items-center gap-3 text-sm text-muted">
               <ShieldCheck className="h-5 w-5 text-primary-600" />
               Guest mode keeps everything local. Sign in whenever you're ready to sync.
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-border bg-surface p-6 shadow-soft">
+            <div className="flex items-center gap-2 mb-4">
+              <Key className="h-5 w-5 text-primary-600" />
+              <h2 className="text-lg font-semibold text-ink">Bring Your Own Key (BYOK)</h2>
+            </div>
+            <p className="text-sm text-muted mb-4">
+              To use the free open-source AI features (like the AI Coach and Kana City NPC) without limits, you can provide your own Groq API Key. Your key is stored securely in your browser's local storage and is never sent to our database.
+            </p>
+            <div>
+              <label className="text-xs uppercase text-muted">Groq API Key</label>
+              <input
+                type="password"
+                value={groqKey}
+                onChange={(e) => {
+                  setGroqKey(e.target.value);
+                  localStorage.setItem('byok_groq_api_key', e.target.value.trim());
+                }}
+                placeholder="gsk_..."
+                className="mt-2 w-full max-w-md rounded-xl border border-border bg-paper2 px-3 py-2 text-ink focus:ring-2 focus:ring-primary-500 outline-none"
+              />
             </div>
           </section>
         </div>
