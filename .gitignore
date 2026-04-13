@@ -44,3 +44,4 @@ lint_*.txt
 tsc_*.txt
 replacements.txt
 *.log
+build_error.txt

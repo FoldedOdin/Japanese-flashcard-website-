@@ -64,13 +64,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data, error }) => {
       try {
+        if (error) {
+          console.error("Error getting session:", error);
+        }
+        const session = data?.session ?? null;
         setSession(session);
         await handleUserUpdate(session?.user ?? null);
+      } catch (err) {
+        console.error("Error handling initial session:", err);
       } finally {
         setLoading(false);
       }
+    }).catch((err) => {
+      console.error("Unhandled top-level getSession error:", err);
+      setLoading(false);
     });
 
     // Listen for auth changes
