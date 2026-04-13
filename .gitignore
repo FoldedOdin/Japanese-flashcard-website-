@@ -32,11 +32,15 @@ dist-ssr
 supabase/.env
 supabase/.env.*
 
-# Local-only docs
+# Local-only docs & scripts
 IDEAS.md
 nihongoflash_overview.md
-lint_output.txt
-replacements.txt
-redact_token.py
 OPEN_SOURCE_PLAN.md
 COMMUNITY_ANNOUNCEMENT.md
+redact_token.py
+
+# Lint & Typecheck logs
+lint_*.txt
+tsc_*.txt
+replacements.txt
+*.log
