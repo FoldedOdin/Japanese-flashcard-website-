@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
-import { CheckCircle2, ChevronRight, Trophy } from 'lucide-react';
+import { ChevronRight, Sparkles, Trophy } from 'lucide-react';
 import { fireConfetti } from '../utils/confetti';
 
 const Welcome: React.FC = () => {
@@ -122,34 +122,25 @@ const Welcome: React.FC = () => {
 
         {step === 4 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 text-center">
-            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Trophy className="w-10 h-10 text-yellow-600" />
+            <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Trophy className="w-10 h-10 text-primary-600" />
             </div>
-            <h1 className="text-3xl font-extrabold text-ink">Ready to Master Japanese?</h1>
+            <h1 className="text-3xl font-extrabold text-ink">You're all set! 🎉</h1>
             <p className="text-muted max-w-md mx-auto">
-              Unlock <strong>Kana City</strong>, our spatial memory palace, and get AI-powered mnemonic stories tailored to your weak points. 
+              NihongoFlash is 100% free and open-source. Everything — Kana City, AI Coach, mnemonics — is yours.
             </p>
-            
-            <div className="bg-paper p-6 rounded-xl border-2 border-primary-500 my-8 text-left space-y-4 shadow-glow">
-              <h3 className="font-bold text-lg text-ink">Premium unlocks:</h3>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm text-ink"><CheckCircle2 className="w-4 h-4 text-primary-500" /> Full Kana City Districts (Hiragana & Katakana)</li>
-                <li className="flex items-center gap-2 text-sm text-ink"><CheckCircle2 className="w-4 h-4 text-primary-500" /> AI Weakness Coach & Mnemonic Generator</li>
-                <li className="flex items-center gap-2 text-sm text-ink"><CheckCircle2 className="w-4 h-4 text-primary-500" /> Weekly Challenges & 2x Streak Shields</li>
-              </ul>
+
+            <div className="bg-paper p-6 rounded-xl border border-border my-8 text-left space-y-3">
+              <div className="flex items-center gap-2 text-sm text-ink"><Sparkles className="w-4 h-4 text-primary-500" /> AI Weakness Coach &amp; Mnemonic Generator</div>
+              <div className="flex items-center gap-2 text-sm text-ink"><Sparkles className="w-4 h-4 text-primary-500" /> Full Kana City spatial memory palace</div>
+              <div className="flex items-center gap-2 text-sm text-ink"><Sparkles className="w-4 h-4 text-primary-500" /> Spaced repetition system — completely free</div>
             </div>
 
-            <button 
-              onClick={() => finishOnboarding('/upgrade')}
-              className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 hover:opacity-90 text-white rounded-xl font-bold text-lg shadow-glow transition-all hover:-translate-y-1"
+            <button
+              onClick={() => finishOnboarding('/learn')}
+              className="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg shadow-soft transition-all hover:-translate-y-1 flex items-center justify-center gap-2"
             >
-              Start My Premium Trial
-            </button>
-            <button 
-              onClick={() => finishOnboarding('/')}
-              className="mt-4 text-sm text-muted hover:text-ink font-medium"
-            >
-              Continue to free version
+              Start Learning <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         )}

@@ -8,13 +8,15 @@ interface FlashCardProps {
   showRomaji?: boolean;
   onFlip?: () => void;
   onAnswer?: (grade: number) => void;
+  reversed?: boolean; // When true: show romaji on front, kana on back (romaji→kana mode)
 }
 
-const FlashCard: React.FC<FlashCardProps> = ({ 
-  character, 
+const FlashCard: React.FC<FlashCardProps> = ({
+  character,
   showRomaji = false,
   onFlip,
-  onAnswer
+  onAnswer,
+  reversed = false,
 }) => {
   const [isFlipped, setIsFlipped] = useState(showRomaji);
   const { playPronunciation } = useAudio();
@@ -54,27 +56,39 @@ const FlashCard: React.FC<FlashCardProps> = ({
         role="button"
         tabIndex={0}
         aria-pressed={isFlipped}
-        aria-label={`Flash card showing ${character.character}. ${isFlipped ? 'Showing pronunciation' : 'Press to reveal pronunciation'}`}
+        aria-label={`Flash card. ${reversed ? 'Showing romaji: ' + character.romaji : 'Showing character: ' + character.character}. ${isFlipped ? 'Showing answer' : 'Press to reveal answer'}`}
       >
-        {/* Front of card - Character */}
-        <div 
+        {/* Front of card */}
+        <div
           className={`absolute inset-0 w-full h-full backface-hidden z-20 ${isFlipped ? 'pointer-events-none' : ''}`}
           style={{ transform: 'rotateY(0deg)' }}
         >
           <div className="w-full h-full rounded-3xl border border-border bg-surface shadow-paper flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-paper-texture opacity-60" />
-            
-            <div 
-              className="text-8xl font-bold text-ink mb-4 relative z-10 font-japanese"
-              id={`pronunciation-${character.id}`}
-            >
-              {character.character}
-            </div>
-            
-            <div className="text-sm text-muted uppercase tracking-wider mb-4">
-              {character.type} • {character.category}
-            </div>
-            
+
+            {reversed ? (
+              // Romaji → Kana: show romaji on front
+              <>
+                <div className="text-6xl font-bold text-ink mb-2 relative z-10" id={`pronunciation-${character.id}`}>
+                  {character.romaji}
+                </div>
+                <div className="text-sm text-muted uppercase tracking-wider mb-4">Romaji → What kana?</div>
+              </>
+            ) : (
+              // Kana → Romaji: show kana on front (default)
+              <>
+                <div
+                  className="text-8xl font-bold text-ink mb-4 relative z-10 font-japanese"
+                  id={`pronunciation-${character.id}`}
+                >
+                  {character.character}
+                </div>
+                <div className="text-sm text-muted uppercase tracking-wider mb-4">
+                  {character.type} • {character.category}
+                </div>
+              </>
+            )}
+
             <button
               onClick={handlePlayAudio}
               onKeyDown={(e) => {
@@ -83,32 +97,40 @@ const FlashCard: React.FC<FlashCardProps> = ({
                   handlePlayAudio(e);
                 }
               }}
-              aria-label={`Replay pronunciation for ${character.character} (${character.type})`}
+              aria-label={`Replay pronunciation for ${character.character}`}
               className="absolute bottom-6 right-6 p-3 bg-primary-500 hover:bg-primary-600 focus:ring-2 focus:ring-primary-400 focus:outline-none rounded-full text-white transition-colors shadow-lg"
             >
               <Volume2 className="h-5 w-5" />
             </button>
-            
+
             <div className="absolute bottom-6 left-6 text-muted font-bold opacity-30 select-none" aria-hidden="true">
               <RotateCcw className="h-5 w-5" />
             </div>
           </div>
         </div>
 
-        {/* Back of card - Romaji */}
-        <div 
+        {/* Back of card */}
+        <div
           className={`absolute inset-0 w-full h-full backface-hidden rotate-y-180 z-10 ${isFlipped ? 'z-30' : ''}`}
           style={{ transform: 'rotateY(180deg)' }}
         >
           <div className="w-full h-full rounded-3xl border border-border bg-paper2 shadow-paper flex flex-col items-center justify-center relative overflow-hidden">
             <div className="absolute inset-0 bg-paper-texture opacity-60" />
-            
-            <div className="text-6xl font-bold text-ink mb-2 relative z-10" aria-live="polite">
-              {character.romaji}
-            </div>
-            
+
+            {reversed ? (
+              // Answer: show kana character
+              <div className="text-8xl font-bold text-ink mb-4 relative z-10 font-japanese" aria-live="polite">
+                {character.character}
+              </div>
+            ) : (
+              // Answer: show romaji
+              <div className="text-6xl font-bold text-ink mb-2 relative z-10" aria-live="polite">
+                {character.romaji}
+              </div>
+            )}
+
             <div className="text-lg text-muted mb-4 flex items-center justify-center gap-2">
-              Pronunciation
+              {reversed ? `${character.type} • ${character.category}` : 'Pronunciation'}
               <button
                 onClick={(e) => { e.stopPropagation(); handlePlayAudio(e); }}
                 className="p-1.5 bg-primary-500/10 hover:bg-primary-500/20 text-primary-500 rounded-full transition-colors"

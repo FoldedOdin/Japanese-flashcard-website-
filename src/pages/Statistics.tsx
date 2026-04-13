@@ -1,23 +1,31 @@
 import React, { useMemo } from 'react';
-import { BarChart3, TrendingUp, Target, Clock, Award, Brain, Calendar, Zap } from 'lucide-react';
+import { BarChart3, TrendingUp, Target, Clock, Brain, Calendar, Zap, AlertTriangle } from 'lucide-react';
 import StatisticsCard from '../components/StatisticsCard';
 import { useProgressStore } from '../hooks/useProgressStore';
+import { useWeakCards } from '../hooks/useWeakCards';
 import { getAllKana } from '../data/kanaData';
 
 const Statistics: React.FC = () => {
   const { state } = useProgressStore();
 
+  const allKana = useMemo(() => getAllKana(), []);
+  const weakCards = useWeakCards(state.characterProgress, allKana);
+
   const analytics = useMemo(() => {
-    const totalCharacters = getAllKana().length;
+    const totalCharacters = allKana.length;
     const completedCharacters = Object.values(state.characterProgress).filter((item) => item.correct > 0).length;
     const completionRate = totalCharacters > 0 ? completedCharacters / totalCharacters : 0;
     const accuracy = state.totalSeen > 0 ? state.totalCorrect / state.totalSeen : 0;
 
+    // 7-day retention rate: correct answers in last 7 days / total attempts in last 7 days
     const now = new Date();
-    const weekAgo = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
-    const sessionsThisWeek = state.studySessions.filter(
-      (session) => new Date(session.endedAt) >= weekAgo
-    ).length;
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const recentSessions = state.studySessions.filter((s) => new Date(s.endedAt) >= weekAgo);
+    const recentCorrect = recentSessions.reduce((sum, s) => sum + s.correctAnswers, 0);
+    const recentTotal = recentSessions.reduce((sum, s) => sum + s.totalQuestions, 0);
+    const retentionRate = recentTotal > 0 ? Math.round((recentCorrect / recentTotal) * 100) : null;
+
+    const sessionsThisWeek = recentSessions.length;
 
     return {
       completionRate: Math.round(completionRate * 100),
@@ -27,8 +35,9 @@ const Statistics: React.FC = () => {
       averageScore: state.totalSeen > 0 ? Math.round(state.score / state.totalSeen) : 0,
       sessionsThisWeek,
       studyStreak: state.currentStreak,
+      retentionRate,
     };
-  }, [state]);
+  }, [state, allKana]);
 
   const weeklyData = useMemo(() => {
     const now = new Date();
@@ -71,9 +80,9 @@ const Statistics: React.FC = () => {
             color="primary"
           />
           <StatisticsCard
-            title="Accuracy Rate"
-            value={`${analytics.accuracy}%`}
-            subtitle={`${state.totalCorrect} correct out of ${state.totalSeen}`}
+            title="Retention Rate (7d)"
+            value={analytics.retentionRate !== null ? `${analytics.retentionRate}%` : 'No data'}
+            subtitle="Correct answers this week"
             icon={TrendingUp}
             color="green"
           />
@@ -94,10 +103,10 @@ const Statistics: React.FC = () => {
             color="accent"
           />
           <StatisticsCard
-            title="Total Score"
-            value={state.score.toLocaleString()}
-            subtitle="Points earned"
-            icon={Award}
+            title="Leech Cards"
+            value={weakCards.length}
+            subtitle="Cards needing focused practice"
+            icon={AlertTriangle}
             color="secondary"
           />
         </div>
@@ -200,6 +209,45 @@ const Statistics: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Leech Cards Section */}
+        {weakCards.length > 0 && (
+          <div className="p-6 bg-surface border border-red-200 rounded-2xl shadow-soft mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="flex items-center text-lg font-semibold text-ink">
+                <AlertTriangle className="w-5 h-5 mr-2 text-red-500" />
+                Leech Cards — Needs Focused Practice
+              </h3>
+              <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold">
+                {weakCards.length} card{weakCards.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <p className="text-sm text-muted mb-4">
+              These characters have been seen 3+ times but remain below 50% accuracy. The SRS system will prioritize them — or go to <strong>Learn → Review</strong> to drill them now.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {weakCards.slice(0, 20).map((card) => {
+                const progress = state.characterProgress[card.id];
+                const acc = progress ? Math.round((progress.correct / progress.seen) * 100) : 0;
+                return (
+                  <div
+                    key={card.id}
+                    className="flex flex-col items-center justify-center w-14 h-14 rounded-xl bg-red-50 border border-red-200 cursor-default"
+                    title={`${card.romaji} — ${acc}% accuracy (${progress?.correct}/${progress?.seen})`}
+                  >
+                    <span className="text-xl font-japanese text-ink">{card.character}</span>
+                    <span className="text-[10px] text-red-500 font-bold">{acc}%</span>
+                  </div>
+                );
+              })}
+              {weakCards.length > 20 && (
+                <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-paper2 border border-border text-xs text-muted font-bold">
+                  +{weakCards.length - 20}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -22,6 +22,7 @@ const Learn: React.FC = () => {
   const [sessionStats, setSessionStats] = useState({ reviewed: 0, incorrect: 0 });
   const [reviewFlipped, setReviewFlipped] = useState(false);
   const [feedbackToast, setFeedbackToast] = useState<{ text: string, type: 'success' | 'warning' } | null>(null);
+  const consecutiveCorrect = React.useRef<Map<string, number>>(new Map());
   const { state, recordAnswer, getDueCharacterIds } = useProgressStore();
 
   const currentData = useMemo(() => {
@@ -48,19 +49,26 @@ const Learn: React.FC = () => {
 
   const handleSessionAnswer = (grade: number) => {
     if (!sessionQueue || sessionQueue.length === 0) return;
-    
+
     const char = sessionQueue[0];
     recordAnswer(char.id, grade);
-    
+
+    const isCorrect = grade >= 4;
+
+    // Track consecutive correct answers per card for the error loop
+    const prevConsecutive = consecutiveCorrect.current.get(char.id) ?? 0;
+    const newConsecutive = isCorrect ? prevConsecutive + 1 : 0;
+    consecutiveCorrect.current.set(char.id, newConsecutive);
+
     setSessionStats(prev => ({
       reviewed: prev.reviewed + 1,
-      incorrect: prev.incorrect + (grade < 4 ? 1 : 0)
+      incorrect: prev.incorrect + (isCorrect ? 0 : 1)
     }));
 
     if (grade === 5) setFeedbackToast({ text: 'Easy! +10 XP', type: 'success' });
     else if (grade === 4) setFeedbackToast({ text: 'Good! +5 XP', type: 'success' });
-    else setFeedbackToast({ text: "Hard. We'll show this again soon.", type: 'warning' });
-    
+    else setFeedbackToast({ text: "Hard — showing again soon.", type: 'warning' });
+
     setTimeout(() => setFeedbackToast(null), 2000);
 
     Sentry.addBreadcrumb({
@@ -77,20 +85,34 @@ const Learn: React.FC = () => {
       scriptType: char.type as "hiragana" | "katakana",
     });
 
-    if (sessionQueue.length > 1) {
-      setSessionQueue(sessionQueue.slice(1));
+    setSessionQueue(prev => {
+      if (!prev || prev.length === 0) return prev;
+      const remaining = prev.slice(1);
+
+      // Error re-insertion: re-queue at +3 if wrong OR not yet 2 consecutive correct
+      const needsReinsertion = !isCorrect || (isCorrect && newConsecutive < 2 && prevConsecutive < 1);
+
+      if (needsReinsertion && remaining.length > 0) {
+        const insertPos = Math.min(3, remaining.length);
+        const reinserted = [...remaining.slice(0, insertPos), char, ...remaining.slice(insertPos)];
+        setReviewFlipped(false);
+        return reinserted;
+      }
+
+      if (remaining.length === 0) {
+        setSessionCompleted(true);
+        const totalReviewed = sessionStats.reviewed + 1;
+        const totalIncorrect = sessionStats.incorrect + (isCorrect ? 0 : 1);
+        Analytics.trackSessionCompleted({
+          accuracy: Math.round(((totalReviewed - totalIncorrect) / Math.max(1, totalReviewed)) * 100),
+          cards_reviewed: totalReviewed
+        });
+        return [];
+      }
+
       setReviewFlipped(false);
-    } else {
-      setSessionQueue([]);
-      setSessionCompleted(true);
-      
-      const totalReviewed = sessionStats.reviewed + 1;
-      const totalIncorrect = sessionStats.incorrect + (grade < 4 ? 1 : 0);
-      Analytics.trackSessionCompleted({
-        accuracy: Math.round(((totalReviewed - totalIncorrect) / Math.max(1, totalReviewed)) * 100),
-        cards_reviewed: totalReviewed
-      });
-    }
+      return remaining;
+    });
   };
 
   const startSession = () => {
@@ -351,10 +373,15 @@ const Learn: React.FC = () => {
                   showRomaji={reviewFlipped}
                   onFlip={() => setReviewFlipped(!reviewFlipped)}
                   onAnswer={handleSessionAnswer}
+                  reversed={state.settings.questionType === 'romaji_to_kana'}
                 />
                 
                 <div className="mt-8 text-sm text-muted text-center max-w-sm">
-                  {reviewFlipped ? 'Use keyboard 1, 2, 3 to grade your memory.' : 'Press space to reveal the pronunciation.'}
+                  {reviewFlipped
+                    ? 'Use keyboard 1, 2, 3 to grade your memory.'
+                    : state.settings.questionType === 'romaji_to_kana'
+                    ? 'Press space to reveal the kana character.'
+                    : 'Press space to reveal the pronunciation.'}
                 </div>
               </div>
             ) : (
