@@ -3,8 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BookOpen, Brain, BarChart3, Trophy, Info, Mail, Sun, Moon, Menu, X, Settings, Home, LogIn, LogOut, Map, Sparkles } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../contexts/AuthContext';
-import { useProgressStore } from '../contexts/ProgressContext';
-import Tooltip from './Tooltip';
+
 
 const navItems = [
   { to: '/', label: 'Home', icon: Home },
@@ -19,12 +18,15 @@ const navItems = [
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
-const Navigation: React.FC = () => {
+interface NavigationProps {
+  onMenuClick?: () => void;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ onMenuClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { user, subscriptionStatus, signOut } = useAuth();
-  const { state } = useProgressStore();
   const [isOpen, setIsOpen] = useState(false);
 
   const resolvedTheme =
@@ -34,9 +36,14 @@ const Navigation: React.FC = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Filter links for the navbar - only show public links here if user is logged in
+  // All other links move to the sidebar
   const filteredNavItems = navItems.filter((item) => {
-    if (['/', '/about', '/contact'].includes(item.to)) return true;
-    return !!user;
+    if (user) {
+      // When logged in, only show basic info links in navbar, or nothing if they are all in sidebar
+      return ['/about', '/contact'].includes(item.to);
+    }
+    return ['/', '/about', '/contact'].includes(item.to);
   });
 
   useEffect(() => {
@@ -61,39 +68,54 @@ const Navigation: React.FC = () => {
       >
         Skip to content
       </a>
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-gradient text-primary-600 shadow-soft">
-            <span className="font-japanese text-xl">あ</span>
-          </div>
-          <div>
-            <div className="text-lg font-semibold text-ink">NihongoFlash</div>
-            <div className="text-xs text-muted">Paper-light learning</div>
-          </div>
-        </Link>
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center space-x-4">
+          {user && (
+            <button
+              onClick={onMenuClick}
+              className="lg:hidden rounded-full p-2 text-muted hover:bg-paper2 hover:text-ink"
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
+          <Link to="/" className="flex items-center space-x-3 shrink-0">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warm-gradient text-primary-600 shadow-soft">
+              <span className="font-japanese text-xl">あ</span>
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-lg font-semibold text-ink">NihongoFlash</div>
+              <div className="text-xs text-muted">Paper-light learning</div>
+            </div>
+          </Link>
+        </div>
 
-        <nav className="hidden items-center space-x-2 lg:flex">
-          {filteredNavItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex items-center space-x-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  isActive(item.to)
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-muted hover:bg-paper2 hover:text-ink'
-                }`}
-                aria-current={isActive(item.to) ? 'page' : undefined}
-              >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        <div className="flex-1 overflow-hidden mx-4 lg:mx-8">
+          {!user && (
+            <nav className="flex items-center space-x-1 overflow-x-auto no-scrollbar py-1">
+              {filteredNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`flex items-center space-x-2 shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                      isActive(item.to)
+                        ? 'bg-primary-100 text-primary-700'
+                        : 'text-muted hover:bg-paper2 hover:text-ink'
+                    }`}
+                    aria-current={isActive(item.to) ? 'page' : undefined}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+        </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 shrink-0">
           <button
             onClick={toggleTheme}
             className="rounded-full border border-border bg-surface p-2 text-muted transition hover:text-ink"
@@ -102,57 +124,50 @@ const Navigation: React.FC = () => {
             {resolvedTheme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </button>
 
+          {!user && (
+            <>
+              <Link
+                to="/login"
+                className="hidden sm:flex items-center space-x-1.5 rounded-full border border-border bg-primary-50 px-4 py-1.5 text-sm font-semibold text-primary-700 transition hover:bg-primary-100"
+              >
+                <LogIn className="h-4 w-4" />
+                <span>Log In</span>
+              </Link>
+              <button
+                className="rounded-full border border-border bg-surface p-2 text-muted transition hover:text-ink sm:hidden"
+                onClick={() => setIsOpen((prev) => !prev)}
+              >
+                {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5 lg:hidden" />}
+              </button>
+            </>
+          )}
+
           {user && (
-            <Tooltip content={`${state.gamification?.xp || 0} XP — Practice to Level Up!`} position="bottom">
-              <div className="hidden lg:flex flex-col items-end mx-2 cursor-help">
-                <span className="text-xs font-extrabold text-primary-600 tracking-wide">LVL {state.gamification?.level || 1}</span>
-                <span className="text-[10px] font-medium text-muted uppercase">{state.gamification?.xp || 0} XP</span>
-              </div>
-            </Tooltip>
+            <>
+              {subscriptionStatus !== 'premium' && subscriptionStatus !== 'trial' && (
+                <Link
+                  to="/upgrade"
+                  className="hidden md:flex items-center space-x-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:scale-105"
+                >
+                  <span>Go Premium</span>
+                </Link>
+              )}
+              <button
+                onClick={() => {
+                  signOut();
+                  navigate('/');
+                }}
+                className="rounded-full border border-border bg-surface p-2 text-muted transition hover:text-red-600 hover:border-red-200"
+                title="Sign Out"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </>
           )}
-
-          {user && subscriptionStatus !== 'premium' && subscriptionStatus !== 'trial' && (
-            <Link
-              to="/upgrade"
-              className="hidden lg:flex items-center space-x-1.5 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:scale-105"
-            >
-              <span>Go Premium</span>
-            </Link>
-          )}
-
-          {user ? (
-            <button
-              onClick={() => {
-                signOut();
-                navigate('/');
-              }}
-              className="hidden lg:flex rounded-full border border-border bg-surface p-2 text-muted transition hover:text-red-600 hover:border-red-200"
-              title="Sign Out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          ) : (
-            <Link
-              to="/login"
-              className="hidden lg:flex items-center space-x-1.5 rounded-full border border-border bg-primary-50 px-4 py-1.5 text-sm font-semibold text-primary-700 transition hover:bg-primary-100"
-            >
-              <LogIn className="h-4 w-4" />
-              <span>Log In</span>
-            </Link>
-          )}
-
-          <button
-            className="rounded-full border border-border bg-surface p-2 text-muted transition hover:text-ink lg:hidden"
-            onClick={() => setIsOpen((prev) => !prev)}
-            aria-expanded={isOpen}
-            aria-label="Toggle navigation"
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
       </div>
 
-      {isOpen && (
+      {isOpen && !user && (
         <div className="border-t border-border bg-paper2 lg:hidden">
           <div className="mx-auto flex max-w-6xl flex-col space-y-2 px-4 py-4">
             {filteredNavItems.map((item) => {
@@ -172,42 +187,6 @@ const Navigation: React.FC = () => {
                 </Link>
               );
             })}
-            <div className="pt-2 mt-2 border-t border-border">
-              {user ? (
-                <>
-                  {subscriptionStatus !== 'premium' && subscriptionStatus !== 'trial' && (
-                    <Link
-                      to="/upgrade"
-                      onClick={() => setIsOpen(false)}
-                      className="flex w-full items-center space-x-2 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 px-3 py-2 text-sm font-medium text-white hover:opacity-90 mb-2"
-                    >
-                      <Trophy className="h-4 w-4" />
-                      <span>Go Premium</span>
-                    </Link>
-                  )}
-                  <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    signOut();
-                    navigate('/');
-                  }}
-                  className="flex w-full items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>Sign Out</span>
-                </button>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="flex w-full items-center space-x-2 rounded-lg bg-primary-100 px-3 py-2 text-sm font-medium text-primary-700 hover:bg-primary-200"
-                >
-                  <LogIn className="h-4 w-4" />
-                  <span>Log In</span>
-                </Link>
-              )}
-            </div>
           </div>
         </div>
       )}

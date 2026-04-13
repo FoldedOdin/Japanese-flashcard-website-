@@ -20,15 +20,49 @@ import AiCoach from './pages/AiCoach';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
-const AppLayout: React.FC = () => (
-  <div className="min-h-screen bg-paper text-ink transition-colors duration-300">
-    <Navigation />
-    <main id="main-content" className="min-h-screen">
-      <Outlet />
-    </main>
-    <Footer />
-  </div>
-);
+import Sidebar from './components/Sidebar';
+import { useAuth } from './contexts/AuthContext';
+
+const AppLayout: React.FC = () => {
+  const { user } = useAuth();
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(
+    () => localStorage.getItem('sidebar_collapsed') === 'true'
+  );
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('sidebar_collapsed', String(next));
+      return next;
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-paper text-ink transition-colors duration-300">
+      <Navigation onMenuClick={() => setIsSidebarOpen(true)} />
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        {user && (
+          <Sidebar 
+            isOpen={isSidebarOpen} 
+            onClose={() => setIsSidebarOpen(false)} 
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={toggleSidebarCollapse}
+          />
+        )}
+        <div className="flex-1 flex flex-col min-w-0">
+          <main 
+            id="main-content" 
+            className={`flex-1 transition-all duration-300 ${user ? 'lg:pt-0' : ''}`}
+          >
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const router = createBrowserRouter(
   [
