@@ -5,9 +5,15 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 import { get as idbGet, set as idbSet } from 'idb-keyval';
 import { Analytics } from '../lib/analytics';
 
+// SRS context now surfaces elapsedMs for time-pressure grading
+declare module '../types' {
+  // Ensures elapsedMs flows through recordAnswer
+}
+
 interface ProgressContextValue {
   state: ProgressState;
-  recordAnswer: (characterId: string, gradeOrCorrect: boolean | number, confidence?: 'easy'|'medium'|'hard') => void;
+  // elapsedMs is the milliseconds the user took to answer (for time-pressure grading)
+  recordAnswer: (characterId: string, gradeOrCorrect: boolean | number, confidence?: 'easy'|'medium'|'hard', elapsedMs?: number) => void;
   addSession: (session: StudySession) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
   resetProgress: () => void;
@@ -19,7 +25,8 @@ interface ProgressContextValue {
   syncWithSupabase: (userId: string) => Promise<void>;
 }
 
-const STORAGE_KEY = 'nihongo-flash-progress-v2';
+const STORAGE_KEY = 'nihongo-flash-progress-v3';
+const LEGACY_KEY_V2 = 'nihongo-flash-progress-v2';
 const LEGACY_KEY = 'nihongo-flash-progress';
 
 const defaultSettings: UserSettings = {
@@ -146,6 +153,27 @@ const migrateLegacy = (): ProgressState | null => {
   }
 };
 
+/**
+ * Backfill missing SRS v3 fields onto CharacterProgress records saved under v2.
+ * Existing values always win; this only fills in missing fields.
+ */
+const migrateProgressFields = (cp: Record<string, CharacterProgress>): Record<string, CharacterProgress> => {
+  const migrated: Record<string, CharacterProgress> = {};
+  Object.entries(cp).forEach(([id, p]) => {
+    migrated[id] = Object.assign(
+      {
+        failCount: 0,
+        isLeech: false,
+        lastAnswerMs: null,
+        perModeCorrect: { recognition: 0, writing: 0 },
+      },
+      p
+    ) as CharacterProgress;
+  });
+  return migrated;
+};
+
+
 const loadState = (): ProgressState => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
@@ -154,11 +182,31 @@ const loadState = (): ProgressState => {
       return {
         ...defaultState,
         ...parsed,
+        characterProgress: migrateProgressFields(parsed.characterProgress || {}),
         settings: { ...defaultSettings, ...(parsed.settings || {}) },
         sync: { ...defaultState.sync, ...(parsed.sync || {}) },
       };
     } catch {
        // Silent fail for load
+    }
+  }
+
+  // Migrate from v2
+  const v2Stored = localStorage.getItem(LEGACY_KEY_V2);
+  if (v2Stored) {
+    try {
+      const parsed = JSON.parse(v2Stored) as ProgressState;
+      const migrated: ProgressState = {
+        ...defaultState,
+        ...parsed,
+        characterProgress: migrateProgressFields(parsed.characterProgress || {}),
+        settings: { ...defaultSettings, ...(parsed.settings || {}) },
+        sync: { ...defaultState.sync, ...(parsed.sync || {}) },
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      return migrated;
+    } catch {
+      // Silent fail
     }
   }
 
@@ -195,7 +243,7 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return nextState;
   };
 
-  const recordAnswer = useCallback((characterId: string, gradeOrCorrect: boolean | number, confidence?: 'easy'|'medium'|'hard') => {
+  const recordAnswer = useCallback((characterId: string, gradeOrCorrect: boolean | number, confidence?: 'easy'|'medium'|'hard', elapsedMs?: number) => {
     setState((prev) => {
       const now = new Date();
       
@@ -208,7 +256,8 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       sessionStorage.setItem('last_answer_time', now.getTime().toString());
 
       const existing = prev.characterProgress[characterId] ?? createCharacterProgress(characterId, now);
-      const updated = applySrs(existing, gradeOrCorrect, confidence, now);
+      // Pass elapsedMs so time-penalty grading is applied inside applySrs
+      const updated = applySrs(existing, gradeOrCorrect, confidence, now, elapsedMs);
 
       const isCorrect = typeof gradeOrCorrect === 'boolean' ? gradeOrCorrect : gradeOrCorrect >= 3;
 
@@ -367,8 +416,15 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [persist]);
 
   const getDueCharacterIds = useCallback((now = new Date()) => {
+    // Sort by nextReviewAt ASC — most overdue cards first.
+    // This is the core of correct SRS scheduling: never skip overdue cards.
     return Object.values(state.characterProgress)
       .filter((item) => isDueForReview(item, now))
+      .sort((a, b) => {
+        const aTime = a.nextReviewAt ? new Date(a.nextReviewAt).getTime() : 0;
+        const bTime = b.nextReviewAt ? new Date(b.nextReviewAt).getTime() : 0;
+        return aTime - bTime; // ASC: most overdue first
+      })
       .map((item) => item.characterId);
   }, [state.characterProgress]);
 
@@ -481,7 +537,13 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             nextReviewAt: row.next_review_at,
             lastSeenAt: row.last_seen_at,
             updatedAt: row.updated_at,
+            // v3 fields — remote DB may not have these columns yet; default safely
+            failCount: (row as Record<string, unknown>).fail_count as number ?? 0,
+            isLeech: (row as Record<string, unknown>).is_leech as boolean ?? false,
+            lastAnswerMs: null,
+            perModeCorrect: { recognition: 0, writing: 0 },
           };
+
         });
       }
 

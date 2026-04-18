@@ -22,6 +22,16 @@ export interface CharacterProgress {
   nextReviewAt: string | null;
   lastSeenAt: string | null;
   updatedAt: string;
+  // Leech escalation system
+  failCount: number;        // Consecutive cross-session failure counter
+  isLeech: boolean;         // True when failCount >= 4 (triggers escalation)
+  // Soft time pressure
+  lastAnswerMs: number | null; // Milliseconds taken on last answer
+  // Multi-modal SRS tracking (Tier 3)
+  perModeCorrect: {
+    recognition: number;
+    writing: number;
+  };
 }
 
 export interface KanaCityDistrict {
